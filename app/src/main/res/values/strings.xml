@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name" translatable="false">Intent Filter</string>
+    <string name="xposed_description">Intercept jumps between applications where dataString is not empty</string>
+    <string name="time">Time</string>
+    <string name="callingPackage" translatable="false">callingPackage</string>
+    <string name="uid" translatable="false">Uid</string>
+    <string name="dataString" translatable="false">dataString</string>
+    <string name="ActivityList" translatable="false">ActivityList</string>
+    <string name="dataStringContain">dataString contains</string>
+    <string name="activityKeywords">Activity keywords</string>
+    <string name="log">Log</string>
+    <string name="rule">Rule</string>
+    <string name="about">About</string>
+    <string name="view">Check</string>
+    <string name="tip_log">All jumps between applications where dataString is not empty will be recorded here, log only work when I am running.</string>
+    <string name="clearLog">Clear log</string>
+    <string name="noEmpty">No empty</string>
+    <string name="save">Save</string>
+    <string name="saved">Saved</string>
+    <string name="add">Add</string>
+    <string name="blocked" translatable="false">Intent Filter: blocked</string>
+    <string name="batteryTip">Please set to ignore battery optimization</string>
+</resources>

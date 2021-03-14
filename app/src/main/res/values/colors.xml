@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="item_normal">#E0E0E0</color>
+    <color name="item_blocked">#FF8A80</color>
+</resources>

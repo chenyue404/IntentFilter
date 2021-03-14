@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="githubAddress" translatable="false">https://github.com/chenyue404/intentfilter</string>
+    <string name="provider_authority" translatable="false">com.chenyue404.intentfilter.preferences</string>
+</resources>
