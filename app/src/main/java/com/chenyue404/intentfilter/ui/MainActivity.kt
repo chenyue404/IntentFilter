@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
@@ -59,10 +58,8 @@ class MainActivity : AppCompatActivity() {
         tvLog.setOnClickListener { selectTab(0) }
         tvRule.setOnClickListener { selectTab(1) }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-            !(getSystemService(Context.POWER_SERVICE) as PowerManager).isIgnoringBatteryOptimizations(
-                packageName
-            )
+        if (!(getSystemService(Context.POWER_SERVICE) as PowerManager)
+                .isIgnoringBatteryOptimizations(packageName)
         ) {
             AlertDialog.Builder(this)
                 .setMessage(R.string.batteryTip)
