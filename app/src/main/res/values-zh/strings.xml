@@ -2,6 +2,8 @@
 <resources>
     <string name="xposed_description">过滤intent</string>
     <string name="time">时间</string>
+    <string name="actionContain">Action包含</string>
+    <string name="typeContain">Type包含</string>
     <string name="dataStringContain">dataString包含</string>
     <string name="activityKeywords">Activity关键词</string>
     <string name="log">日志</string>
@@ -15,4 +17,6 @@
     <string name="saved">已保存</string>
     <string name="add">添加</string>
     <string name="batteryTip">请设置忽略电池优化</string>
+    <string name="black">黑</string>
+    <string name="white">白</string>
 </resources>

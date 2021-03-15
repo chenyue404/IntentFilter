@@ -45,13 +45,51 @@
         tools:text="@tools:sample/full_names" />
 
     <TextView
+        android:id="@+id/tvTitleAction"
+        style="@style/TextAppearance.AppCompat.Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/action"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTime" />
+
+    <TextView
+        android:id="@+id/tvAction"
+        style="@style/TextAppearance.AppCompat.Body1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textIsSelectable="true"
+        app:layout_constraintStart_toStartOf="@id/tvTitleAction"
+        app:layout_constraintTop_toBottomOf="@id/tvTitleAction"
+        tools:text="@tools:sample/full_names" />
+
+    <TextView
+        android:id="@+id/tvTitleType"
+        style="@style/TextAppearance.AppCompat.Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/type"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvAction" />
+
+    <TextView
+        android:id="@+id/tvType"
+        style="@style/TextAppearance.AppCompat.Body1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textIsSelectable="true"
+        app:layout_constraintStart_toStartOf="@id/tvTitleType"
+        app:layout_constraintTop_toBottomOf="@id/tvTitleType"
+        tools:text="@tools:sample/full_names" />
+
+    <TextView
         android:id="@+id/tvTitleDataString"
         style="@style/TextAppearance.AppCompat.Title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/dataString"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTime" />
+        app:layout_constraintTop_toBottomOf="@id/tvType" />
 
     <TextView
         android:id="@+id/tvDataString"

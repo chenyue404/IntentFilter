@@ -14,11 +14,8 @@ import androidx.core.content.edit
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
-import com.chenyue404.intentfilter.MyPreferenceProvider
-import com.chenyue404.intentfilter.R
-import com.chenyue404.intentfilter.dp2Px
+import com.chenyue404.intentfilter.*
 import com.chenyue404.intentfilter.entity.RuleEntity
-import com.chenyue404.intentfilter.fromJson
 import com.google.gson.Gson
 
 class RuleFragment : Fragment() {
@@ -60,7 +57,9 @@ class RuleFragment : Fragment() {
         btSave.setOnClickListener {
             val haveEmptyEntity =
                 dataList.any {
-                    it.dataStringKeywords.isEmpty()
+                    it.actionKeywords.isEmpty()
+                            && it.typeKeywords.isEmpty()
+                            && it.dataStringKeywords.isEmpty()
                             && it.activityKeywords.isEmpty()
                             && it.uids.isEmpty()
                 }
@@ -116,9 +115,13 @@ class RuleFragment : Fragment() {
         RecyclerView.Adapter<RuleListAdapter.ViewHolder>() {
 
         private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val etAction: EditText = itemView.findViewById(R.id.etAction)
+            val etType: EditText = itemView.findViewById(R.id.etType)
             val etDataString: EditText = itemView.findViewById(R.id.etDataString)
             val etActivity: EditText = itemView.findViewById(R.id.etActivity)
             val etUid: EditText = itemView.findViewById(R.id.etUid)
+            val tbAction: ToggleButton = itemView.findViewById(R.id.tbAction)
+            val tbType: ToggleButton = itemView.findViewById(R.id.tbType)
             val tbDataString: ToggleButton = itemView.findViewById(R.id.tbDataString)
             val tbActivity: ToggleButton = itemView.findViewById(R.id.tbActivity)
             val tbUid: ToggleButton = itemView.findViewById(R.id.tbUid)
@@ -132,18 +135,50 @@ class RuleFragment : Fragment() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val ruleEntity = dataList[position]
             with(holder) {
+                etAction.setText(ruleEntity.actionKeywords)
+                etType.setText(ruleEntity.typeKeywords)
                 etDataString.setText(ruleEntity.dataStringKeywords)
                 etActivity.setText(ruleEntity.activityKeywords)
                 etUid.setText(ruleEntity.uids)
+
+                tbAction.isChecked = ruleEntity.actionBlack
+                tbAction.visible(ruleEntity.actionKeywords.isNotEmpty())
+                tbType.isChecked = ruleEntity.typeBlack
+                tbType.visible(ruleEntity.typeKeywords.isNotEmpty())
                 tbDataString.isChecked = ruleEntity.dataStringBlack
+                tbDataString.visible(ruleEntity.dataStringKeywords.isNotEmpty())
                 tbActivity.isChecked = ruleEntity.activityBlack
+                tbActivity.visible(ruleEntity.activityKeywords.isNotEmpty())
                 tbUid.isChecked = ruleEntity.uidBlack
-                ibDelete.setOnClickListener {
-                    deleteFun(position)
+                tbUid.visible(ruleEntity.uids.isNotEmpty())
+
+                etAction.doAfterTextChanged {
+                    ruleEntity.actionKeywords = it.toString()
+                    tbAction.visible(it.toString().isNotEmpty())
                 }
-                etDataString.doAfterTextChanged { ruleEntity.dataStringKeywords = it.toString() }
-                etActivity.doAfterTextChanged { ruleEntity.activityKeywords = it.toString() }
-                etUid.doAfterTextChanged { ruleEntity.uids = it.toString() }
+                etType.doAfterTextChanged {
+                    ruleEntity.typeKeywords = it.toString()
+                    tbType.visible(it.toString().isNotEmpty())
+                }
+                etDataString.doAfterTextChanged {
+                    ruleEntity.dataStringKeywords = it.toString()
+                    tbDataString.visible(it.toString().isNotEmpty())
+                }
+                etActivity.doAfterTextChanged {
+                    ruleEntity.activityKeywords = it.toString()
+                    tbActivity.visible(it.toString().isNotEmpty())
+                }
+                etUid.doAfterTextChanged {
+                    ruleEntity.uids = it.toString()
+                    tbUid.visible(it.toString().isNotEmpty())
+                }
+
+                tbAction.setOnCheckedChangeListener { _, isChecked ->
+                    ruleEntity.actionBlack = isChecked
+                }
+                tbType.setOnCheckedChangeListener { _, isChecked ->
+                    ruleEntity.typeBlack = isChecked
+                }
                 tbDataString.setOnCheckedChangeListener { _, isChecked ->
                     ruleEntity.dataStringBlack = isChecked
                 }
@@ -153,6 +188,7 @@ class RuleFragment : Fragment() {
                 tbUid.setOnCheckedChangeListener { _, isChecked ->
                     ruleEntity.uidBlack = isChecked
                 }
+                ibDelete.setOnClickListener { deleteFun(position) }
             }
         }
 

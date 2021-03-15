@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
@@ -55,7 +56,9 @@ class LogFragment : Fragment() {
         logReceiver = LogReceiver {
             dataList.add(it)
             listAdapter.notifyItemChanged(dataList.lastIndex)
-            rvList.scrollToPosition(dataList.lastIndex)
+            if (!rvList.canScrollVertically(1)) {
+                rvList.scrollToPosition(dataList.lastIndex)
+            }
         }
         requireActivity().registerReceiver(logReceiver, IntentFilter().apply {
             addAction(LogReceiver.ACTION)
@@ -73,6 +76,9 @@ class LogFragment : Fragment() {
         private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val tvTime = itemView.findViewById<TextView>(R.id.tvTime)
             val tvUid = itemView.findViewById<TextView>(R.id.tvUid)
+            val tvTitleUid = itemView.findViewById<TextView>(R.id.tvTitleUid)
+            val tvAction = itemView.findViewById<TextView>(R.id.tvAction)
+            val tvType = itemView.findViewById<TextView>(R.id.tvType)
             val tvDataString = itemView.findViewById<TextView>(R.id.tvDataString)
             val tvActivities = itemView.findViewById<TextView>(R.id.tvActivities)
         }
@@ -82,25 +88,36 @@ class LogFragment : Fragment() {
         )
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val context = holder.itemView.context
             val logEntity = dataList[position]
             val activityList = logEntity.activities.split(App.SPLIT_LETTER)
             val indexList = logEntity.blockIndexes.split(App.SPLIT_LETTER)
             with(holder) {
                 tvTime.text = logEntity.time.timeToStr()
                 tvUid.text = logEntity.uid
+                tvAction.text = logEntity.action
+                tvType.text = logEntity.type
                 tvDataString.text = logEntity.dataString
                 val spanUtils = SpanUtils.with(tvActivities)
                 activityList.forEachIndexed { index, str ->
                     spanUtils.appendLine(str)
                         .setForegroundColor(
                             ContextCompat.getColor(
-                                itemView.context,
+                                context,
                                 if (indexList.contains(index.toString())) R.color.text_blocked
                                 else R.color.text_normal
                             )
                         )
                 }
                 spanUtils.create()
+
+                val showPackage = View.OnClickListener {
+                    AlertDialog.Builder(context)
+                        .setMessage(context.packageManager.getNameForUid(logEntity.uid.toInt()))
+                        .create().show()
+                }
+                tvTitleUid.setOnClickListener(showPackage)
+                tvUid.setOnClickListener(showPackage)
             }
         }
 

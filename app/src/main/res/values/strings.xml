@@ -4,9 +4,13 @@
     <string name="time">Time</string>
     <string name="callingPackage" translatable="false">callingPackage</string>
     <string name="uid" translatable="false">Uid</string>
-    <string name="dataString" translatable="false">dataString</string>
+    <string name="dataString" translatable="false">DataString</string>
+    <string name="action" translatable="false">Action</string>
+    <string name="type" translatable="false">Type</string>
     <string name="ActivityList" translatable="false">ActivityList</string>
-    <string name="dataStringContain">dataString contains</string>
+    <string name="actionContain">Action contains</string>
+    <string name="typeContain">Type contains</string>
+    <string name="dataStringContain">DataString contains</string>
     <string name="activityKeywords">Activity keywords</string>
     <string name="log">Log</string>
     <string name="rule">Rule</string>
@@ -20,4 +24,6 @@
     <string name="add">Add</string>
     <string name="blocked" translatable="false">Intent Filter: blocked</string>
     <string name="batteryTip">Please set to ignore battery optimization</string>
+    <string name="black">Black</string>
+    <string name="white">White</string>
 </resources>

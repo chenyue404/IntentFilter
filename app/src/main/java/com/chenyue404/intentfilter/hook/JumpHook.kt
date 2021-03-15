@@ -34,7 +34,7 @@ class JumpHook : IXposedHookLoadPackage {
             return
         }
 
-//        hookCheckBroadcastFromSystem(classLoader)
+        hookCheckBroadcastFromSystem(classLoader)
         hookStartActivity(classLoader)
 
         when (Build.VERSION.SDK_INT) {
@@ -131,13 +131,16 @@ class JumpHook : IXposedHookLoadPackage {
         return object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 val intent = param.args[0] as Intent
-                val intentPackage = if (intent.`package` != null) intent.`package` as String else ""
-                if ((intent.action == null || intent.action != Intent.ACTION_VIEW)
-                    && (TextUtils.isEmpty(intentPackage) || intentPackage != BuildConfig.APPLICATION_ID)
-                ) return
-                val dataString = intent.dataString.toString()
-                val filterCallingUid = (param.args[3] as Int).toString()
+                val intentAction = intent.action ?: ""
+                val intentType = intent.type ?: ""
+                val intentCompPackage = intent.component?.packageName ?: ""
+                val dataString = intent.dataString ?: ""
                 val list = param.result as List<ResolveInfo>
+                if (list.isNullOrEmpty() || (intentAction == Intent.ACTION_MAIN && intentCompPackage != BuildConfig.APPLICATION_ID)) {
+                    return
+                }
+
+                val filterCallingUid = (param.args[3] as Int).toString()
                 val contextField = XposedHelpers.findFieldIfExists(
                     param.thisObject.javaClass,
                     "mContext"
@@ -158,35 +161,48 @@ class JumpHook : IXposedHookLoadPackage {
                     )
                 )
                 if (ruleStr.isEmpty()
-                    || (!TextUtils.isEmpty(intentPackage) && intentPackage == BuildConfig.APPLICATION_ID)
+                    || (!TextUtils.isEmpty(intentCompPackage) && intentCompPackage == BuildConfig.APPLICATION_ID)
                 ) {
                     val mHandler = handlerField[param.thisObject] as Handler
 
-                    log("$TAG ruleStr读取之前=$ruleStr")
+//                    log("$TAG ruleStr读取之前=$ruleStr")
                     mHandler.post {
                         ruleStr = RemotePreferences(
                             mContext,
                             providerAuthority,
                             MyPreferenceProvider.PREF_NAME
                         ).getString(MyPreferenceProvider.KEY_NAME, "").toString()
-                        log("$TAG ruleStr读取=$ruleStr")
+//                        log("$TAG ruleStr读取=$ruleStr")
                     }
                 } else {
-                    log("$TAG ruleStr有值=$ruleStr")
+//                    log("$TAG ruleStr有值=$ruleStr")
                 }
                 val ruleList = arrayListOf<RuleEntity>()
                 if (ruleStr.isNotEmpty() && ruleStr != MyPreferenceProvider.EMPTY_STR) {
                     ruleList.addAll(fromJson<ArrayList<RuleEntity>>(ruleStr))
                 }
                 val needActivityMatch = ruleList.any { ruleEntity ->
-                    val dataStringMatch = (ruleEntity.dataStringKeywords.isEmpty() ||
-                            ruleEntity.dataStringKeywords.split(App.SPLIT_LETTER).any {
-                                dataString.contains(it)
-                            }) && ruleEntity.dataStringBlack
-                    val uidMatch =
-                        (ruleEntity.uids.isEmpty() || ruleEntity.uids.split(App.SPLIT_LETTER)
-                            .contains(filterCallingUid)) && ruleEntity.uidBlack
-                    dataStringMatch && uidMatch
+                    val actionMatch = if (ruleEntity.actionKeywords.isEmpty()) true
+                    else ruleEntity.actionBlack ==
+                            ruleEntity.actionKeywords.split(App.SPLIT_LETTER)
+                                .any { intentAction.contains(it) }
+
+                    val typeMatch = if (ruleEntity.typeKeywords.isEmpty()) true
+                    else ruleEntity.typeBlack ==
+                            ruleEntity.typeKeywords.split(App.SPLIT_LETTER)
+                                .any { intentType.contains(it) }
+
+                    val dataStringMatch = if (ruleEntity.dataStringKeywords.isEmpty()) true
+                    else ruleEntity.dataStringBlack ==
+                            ruleEntity.dataStringKeywords.split(App.SPLIT_LETTER)
+                                .any { dataString.contains(it) }
+
+                    val uidMatch = if (ruleEntity.uids.isEmpty()) true
+                    else ruleEntity.uidBlack ==
+                            ruleEntity.uids.split(App.SPLIT_LETTER)
+                                .any { filterCallingUid.contains(it) }
+//                    log("actionMatch=$actionMatch--typeMatch=$typeMatch--dataStringMatch=$dataStringMatch--uidMatch=$uidMatch")
+                    actionMatch && typeMatch && dataStringMatch && uidMatch
                 }
 
                 val indexList = arrayListOf<Int>()
@@ -201,9 +217,10 @@ class JumpHook : IXposedHookLoadPackage {
                         val activityStr = "$packageName/$name"
                         activityList.add(activityStr)
                         needFilterOut = needActivityMatch && ruleList.any { ruleEntity ->
-                            ruleEntity.activityKeywords.split(App.SPLIT_LETTER).any {
-                                activityStr.contains(it)
-                            }
+                            if (ruleEntity.activityKeywords.isEmpty()) true
+                            else ruleEntity.activityBlack ==
+                                    ruleEntity.activityKeywords.split(App.SPLIT_LETTER)
+                                        .any { activityStr.contains(it) }
                         }
                     }
                     if (needFilterOut) {
@@ -218,21 +235,27 @@ class JumpHook : IXposedHookLoadPackage {
                             "activity=$activityList\n" +
                             "blocked=$indexList"
                 )
-
-                myContext.sendBroadcast(Intent().apply {
-                    action = LogReceiver.ACTION
-                    putExtra(
-                        LogReceiver.EXTRA_KEY, Gson().toJson(
-                            LogEntity(
-                                System.currentTimeMillis(),
-                                filterCallingUid,
-                                dataString,
-                                activityList.joinToString(separator = App.SPLIT_LETTER),
-                                indexList.joinToString(separator = App.SPLIT_LETTER)
+                if (list.isNotEmpty()
+                    && (intentAction.isNotEmpty() || dataString.isNotEmpty())
+                    && (intentAction.isEmpty() || intentAction != Intent.ACTION_MAIN)
+                ) {
+                    mContext.sendBroadcast(Intent().apply {
+                        action = LogReceiver.ACTION
+                        putExtra(
+                            LogReceiver.EXTRA_KEY, Gson().toJson(
+                                LogEntity(
+                                    time = System.currentTimeMillis(),
+                                    uid = filterCallingUid,
+                                    action = intentAction,
+                                    type = intentType,
+                                    dataString = dataString,
+                                    activities = activityList.joinToString(separator = App.SPLIT_LETTER),
+                                    blockIndexes = indexList.joinToString(separator = App.SPLIT_LETTER)
+                                )
                             )
                         )
-                    )
-                })
+                    })
+                }
 
                 if (indexList.isNotEmpty()) {
                     param.result = newList

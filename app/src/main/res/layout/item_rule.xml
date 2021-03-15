@@ -8,57 +8,77 @@
     android:padding="15dp">
 
     <ToggleButton
-        android:id="@+id/tbDataString"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@id/etDataString"
+        android:id="@+id/tbAction"
+        style="@style/RuleToggleButton"
+        app:layout_constraintBottom_toBottomOf="@id/etAction"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/etAction" />
+
+    <EditText
+        android:id="@+id/etAction"
+        style="@style/RuleEditText"
+        android:hint="@string/actionContain"
+        app:layout_constraintEnd_toStartOf="@id/tbAction"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ToggleButton
+        android:id="@+id/tbType"
+        style="@style/RuleToggleButton"
+        app:layout_constraintBottom_toBottomOf="@id/etType"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/etType" />
+
+    <EditText
+        android:id="@+id/etType"
+        style="@style/RuleEditText"
+        android:hint="@string/typeContain"
+        app:layout_constraintEnd_toStartOf="@id/tbType"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/etAction" />
+
+    <ToggleButton
+        android:id="@+id/tbDataString"
+        style="@style/RuleToggleButton"
+        app:layout_constraintBottom_toBottomOf="@id/etDataString"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/etDataString" />
 
     <EditText
         android:id="@+id/etDataString"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        style="@style/RuleEditText"
         android:hint="@string/dataStringContain"
-        android:singleLine="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/tbDataString"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toStartOf="@id/tbDataString"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/etType" />
 
     <ToggleButton
         android:id="@+id/tbActivity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        style="@style/RuleToggleButton"
         app:layout_constraintBottom_toBottomOf="@id/etActivity"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/etActivity" />
 
     <EditText
         android:id="@+id/etActivity"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        style="@style/RuleEditText"
         android:hint="@string/activityKeywords"
-        android:maxLines="1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/tbActivity"
+        app:layout_constraintEnd_toStartOf="@id/tbActivity"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/etDataString" />
 
     <ToggleButton
         android:id="@+id/tbUid"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
+        style="@style/RuleToggleButton"
+        app:layout_constraintEnd_toStartOf="@id/ibDelete"
         app:layout_constraintTop_toBottomOf="@id/etActivity" />
-
 
     <EditText
         android:id="@+id/etUid"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        style="@style/RuleEditText"
         android:hint="@string/uid"
-        android:maxLines="1"
-        app:layout_constraintEnd_toStartOf="@id/ibDelete"
-        app:layout_constraintStart_toEndOf="@id/tbUid"
+        app:layout_constraintEnd_toStartOf="@id/tbUid"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/etActivity" />
 
     <ImageButton

@@ -1,6 +1,7 @@
 package com.chenyue404.intentfilter
 
 import android.content.Context
+import android.view.View
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.text.SimpleDateFormat
@@ -22,4 +23,8 @@ inline fun <reified T> fromJson(json: String?): T {
 
 fun getResourceIdByName(context: Context, name: String): Int {
     return context.resources.getIdentifier(name, "string", context.packageName)
+}
+
+fun View.visible(visibility: Boolean) {
+    this.visibility = if (visibility) View.VISIBLE else View.GONE
 }
