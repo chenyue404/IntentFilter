@@ -1,12 +1,7 @@
 package com.chenyue404.intentfilter.ui
 
-import android.content.Context
 import android.content.IntentFilter
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -90,38 +85,24 @@ class LogFragment : Fragment() {
             val logEntity = dataList[position]
             val activityList = logEntity.activities.split(App.SPLIT_LETTER)
             val indexList = logEntity.blockIndexes.split(App.SPLIT_LETTER)
-            holder.apply {
+            with(holder) {
                 tvTime.text = logEntity.time.timeToStr()
                 tvUid.text = logEntity.uid
                 tvDataString.text = logEntity.dataString
-                val spannableStringBuilder = SpannableStringBuilder()
+                val spanUtils = SpanUtils.with(tvActivities)
                 activityList.forEachIndexed { index, str ->
-                    spannableStringBuilder
-                        .append(
-                            colorSpanText(
+                    spanUtils.appendLine(str)
+                        .setForegroundColor(
+                            ContextCompat.getColor(
                                 itemView.context,
-                                str,
-                                indexList.contains(index.toString())
+                                if (indexList.contains(index.toString())) R.color.text_blocked
+                                else R.color.text_normal
                             )
                         )
-                        .append("\n")
                 }
-                tvActivities.text = spannableStringBuilder.toString()
+                spanUtils.create()
             }
         }
-
-        private fun colorSpanText(context: Context, str: String, blocked: Boolean) =
-            SpannableString(str).apply {
-                setSpan(
-                    ForegroundColorSpan(
-                        ContextCompat.getColor(
-                            context,
-                            if (blocked) R.color.item_blocked else R.color.item_normal
-                        )
-                    ),
-                    0, str.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
 
         override fun getItemCount() = dataList.size
     }

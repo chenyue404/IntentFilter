@@ -131,9 +131,11 @@ class JumpHook : IXposedHookLoadPackage {
         return object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 val intent = param.args[0] as Intent
-                if (intent.action == null || intent.action != Intent.ACTION_VIEW) return
-                val dataString = intent.dataString.toString()
                 val intentPackage = if (intent.`package` != null) intent.`package` as String else ""
+                if ((intent.action == null || intent.action != Intent.ACTION_VIEW)
+                    && (TextUtils.isEmpty(intentPackage) || intentPackage != BuildConfig.APPLICATION_ID)
+                ) return
+                val dataString = intent.dataString.toString()
                 val filterCallingUid = (param.args[3] as Int).toString()
                 val list = param.result as List<ResolveInfo>
                 val contextField = XposedHelpers.findFieldIfExists(

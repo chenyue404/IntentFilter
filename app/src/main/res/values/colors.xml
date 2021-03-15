@@ -2,4 +2,6 @@
 <resources>
     <color name="item_normal">#E0E0E0</color>
     <color name="item_blocked">#FF8A80</color>
+    <color name="text_blocked">#FF8A80</color>
+    <color name="text_normal">#000000</color>
 </resources>
