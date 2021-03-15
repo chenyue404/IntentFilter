@@ -58,6 +58,7 @@
         style="@style/TextAppearance.AppCompat.Body1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textIsSelectable="true"
         app:layout_constraintStart_toStartOf="@id/tvTitleDataString"
         app:layout_constraintTop_toBottomOf="@id/tvTitleDataString"
         tools:text="@tools:sample/full_names" />
@@ -71,12 +72,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvDataString" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvActivities"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/tvActivities"
+        style="@style/TextAppearance.AppCompat.Caption"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:textIsSelectable="true"
+        app:layout_constraintStart_toStartOf="@id/tvTitleActivityList"
         app:layout_constraintTop_toBottomOf="@id/tvTitleActivityList"
-        tools:itemCount="3"
-        tools:listitem="@layout/item_activity_list" />
+        tools:text="@tools:sample/full_names" />
 </androidx.constraintlayout.widget.ConstraintLayout>

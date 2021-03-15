@@ -1,7 +1,12 @@
 package com.chenyue404.intentfilter.ui
 
+import android.content.Context
 import android.content.IntentFilter
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -69,11 +74,12 @@ class LogFragment : Fragment() {
 
     private class LogListAdapter(val dataList: ArrayList<LogEntity>) :
         RecyclerView.Adapter<LogListAdapter.ViewHolder>() {
+
         private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val tvTime = itemView.findViewById<TextView>(R.id.tvTime)
             val tvUid = itemView.findViewById<TextView>(R.id.tvUid)
             val tvDataString = itemView.findViewById<TextView>(R.id.tvDataString)
-            val rvActivities = itemView.findViewById<RecyclerView>(R.id.rvActivities)
+            val tvActivities = itemView.findViewById<TextView>(R.id.tvActivities)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder = ViewHolder(
@@ -82,49 +88,40 @@ class LogFragment : Fragment() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val logEntity = dataList[position]
+            val activityList = logEntity.activities.split(App.SPLIT_LETTER)
+            val indexList = logEntity.blockIndexes.split(App.SPLIT_LETTER)
             holder.apply {
                 tvTime.text = logEntity.time.timeToStr()
                 tvUid.text = logEntity.uid
                 tvDataString.text = logEntity.dataString
-                rvActivities.adapter = object : ActivityListAdapter(
-                    logEntity.activities.split(App.SPLIT_LETTER),
-                    logEntity.blockIndexes.split(App.SPLIT_LETTER)
-                ) {
-
+                val spannableStringBuilder = SpannableStringBuilder()
+                activityList.forEachIndexed { index, str ->
+                    spannableStringBuilder
+                        .append(
+                            colorSpanText(
+                                itemView.context,
+                                str,
+                                indexList.contains(index.toString())
+                            )
+                        )
+                        .append("\n")
                 }
+                tvActivities.text = spannableStringBuilder.toString()
             }
         }
 
-        override fun getItemCount() = dataList.size
-    }
-
-    private open class ActivityListAdapter(
-        val dataList: List<String>,
-        val blockIndexList: List<String>
-    ) :
-        RecyclerView.Adapter<ActivityListAdapter.ViewHolder>() {
-        private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val tvItem = itemView as TextView
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
-            ViewHolder(
-                LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_activity_list, parent, false)
-            )
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.tvItem.apply {
-                text = dataList[position]
-                setTextColor(
-                    ContextCompat.getColor(
-                        holder.itemView.context,
-                        if (blockIndexList.contains(position.toString())) R.color.item_blocked
-                        else R.color.item_normal
-                    )
+        private fun colorSpanText(context: Context, str: String, blocked: Boolean) =
+            SpannableString(str).apply {
+                setSpan(
+                    ForegroundColorSpan(
+                        ContextCompat.getColor(
+                            context,
+                            if (blocked) R.color.item_blocked else R.color.item_normal
+                        )
+                    ),
+                    0, str.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
             }
-        }
 
         override fun getItemCount() = dataList.size
     }

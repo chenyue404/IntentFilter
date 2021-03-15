@@ -7,8 +7,10 @@ import android.os.Build
 import android.os.Handler
 import android.text.TextUtils
 import com.chenyue404.intentfilter.*
+import com.chenyue404.intentfilter.entity.LogEntity
 import com.chenyue404.intentfilter.entity.RuleEntity
 import com.crossbowffs.remotepreferences.RemotePreferences
+import com.google.gson.Gson
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
@@ -133,7 +135,7 @@ class JumpHook : IXposedHookLoadPackage {
                 val dataString = intent.dataString.toString()
                 val intentPackage = if (intent.`package` != null) intent.`package` as String else ""
                 val filterCallingUid = (param.args[3] as Int).toString()
-                val list = param.result as List<*>
+                val list = param.result as List<ResolveInfo>
                 val contextField = XposedHelpers.findFieldIfExists(
                     param.thisObject.javaClass,
                     "mContext"
@@ -158,17 +160,17 @@ class JumpHook : IXposedHookLoadPackage {
                 ) {
                     val mHandler = handlerField[param.thisObject] as Handler
 
-                    XposedBridge.log("$TAG ruleStr读取之前=$ruleStr")
+                    log("$TAG ruleStr读取之前=$ruleStr")
                     mHandler.post {
                         ruleStr = RemotePreferences(
                             mContext,
                             providerAuthority,
                             MyPreferenceProvider.PREF_NAME
                         ).getString(MyPreferenceProvider.KEY_NAME, "").toString()
-                        XposedBridge.log("$TAG ruleStr读取=$ruleStr")
+                        log("$TAG ruleStr读取=$ruleStr")
                     }
                 } else {
-                    XposedBridge.log("$TAG ruleStr有值=$ruleStr")
+                    log("$TAG ruleStr有值=$ruleStr")
                 }
                 val ruleList = arrayListOf<RuleEntity>()
                 if (ruleStr.isNotEmpty() && ruleStr != MyPreferenceProvider.EMPTY_STR) {
@@ -188,8 +190,7 @@ class JumpHook : IXposedHookLoadPackage {
                 val indexList = arrayListOf<Int>()
                 val activityList = arrayListOf<String>()
                 val newList = arrayListOf<ResolveInfo>()
-                list.forEachIndexed { index, it ->
-                    val resolveInfo = it as ResolveInfo
+                list.forEachIndexed { index, resolveInfo ->
                     val activityInfo = resolveInfo.activityInfo
                     val packageName = activityInfo.packageName.toString()
                     val name = activityInfo.name.toString()
@@ -209,12 +210,28 @@ class JumpHook : IXposedHookLoadPackage {
                         newList.add(resolveInfo)
                     }
                 }
-                XposedBridge.log(
-                    "$TAG intent=$intent\n" +
+                log(
+                    "intent=$intent\n" +
                             "uid=$filterCallingUid\n" +
                             "activity=$activityList\n" +
                             "blocked=$indexList"
                 )
+
+                mContext.sendBroadcast(Intent().apply {
+                    action = LogReceiver.ACTION
+                    putExtra(
+                        LogReceiver.EXTRA_KEY, Gson().toJson(
+                            LogEntity(
+                                System.currentTimeMillis(),
+                                filterCallingUid,
+                                dataString,
+                                activityList.joinToString(separator = App.SPLIT_LETTER),
+                                indexList.joinToString(separator = App.SPLIT_LETTER)
+                            )
+                        )
+                    )
+                })
+
                 if (indexList.isNotEmpty()) {
                     param.result = newList
                 }
@@ -223,5 +240,10 @@ class JumpHook : IXposedHookLoadPackage {
     }
 
     private fun hookStartActivity(classLoader: ClassLoader) {
+    }
+
+    private fun log(str: String) {
+        if (!BuildConfig.DEBUG) return
+        XposedBridge.log("$TAG-$str")
     }
 }
