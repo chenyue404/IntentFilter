@@ -7,6 +7,19 @@
     android:focusable="true"
     android:focusableInTouchMode="true">
 
+    <TextView
+        android:id="@+id/tvTip"
+        style="@style/TextAppearance.AppCompat.Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="50dp"
+        android:text="@string/tip_rule"
+        app:layout_constraintBottom_toTopOf="@id/btSave"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvList"
         android:layout_width="match_parent"

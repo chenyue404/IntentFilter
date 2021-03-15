@@ -1,5 +1,6 @@
 package com.chenyue404.intentfilter.hook
 
+import android.app.AndroidAppHelper
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
@@ -146,7 +147,7 @@ class JumpHook : IXposedHookLoadPackage {
                     "mContext"
                 )
                 val mContext = contextField[param.thisObject] as Context
-                val myContext = mContext.createPackageContext(
+                val myContext = AndroidAppHelper.currentApplication().createPackageContext(
                     BuildConfig.APPLICATION_ID,
                     Context.CONTEXT_IGNORE_SECURITY
                 )

@@ -10,9 +10,10 @@
     <string name="rule">规则</string>
     <string name="about">关于</string>
     <string name="view">查看</string>
-    <string name="tip_log">所有dataString不为空的应用间的跳转记录都会在这里，App打开才能记录。</string>
+    <string name="tip_log">绝大部分PackageManagerService.queryIntentActivitiesInternal的记录，App打开才能记录</string>
+    <string name="tip_rule">用&lt;font color=\'#FF8A80\'>%s&lt;/font>分割，留空则不匹配</string>
     <string name="clearLog">清除记录</string>
-    <string name="noEmpty">不要留空</string>
+    <string name="noEmpty">至少填一项</string>
     <string name="save">保存</string>
     <string name="saved">已保存</string>
     <string name="add">添加</string>

@@ -16,9 +16,10 @@
     <string name="rule">Rule</string>
     <string name="about">About</string>
     <string name="view">Check</string>
-    <string name="tip_log">All jumps between applications where dataString is not empty will be recorded here, log only work when I am running.</string>
+    <string name="tip_log">The vast majority of PackageManagerService.queryIntentActivitiesInternal records, App open to record</string>
+    <string name="tip_rule">Split with &lt;font color=\'#FF8A80\'>%s&lt;/font>, leave blank means don\'t match</string>
     <string name="clearLog">Clear log</string>
-    <string name="noEmpty">No empty</string>
+    <string name="noEmpty">Fill in at least one</string>
     <string name="save">Save</string>
     <string name="saved">Saved</string>
     <string name="add">Add</string>

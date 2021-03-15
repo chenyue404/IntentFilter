@@ -1,15 +1,15 @@
 package com.chenyue404.intentfilter.ui
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.Toast
-import android.widget.ToggleButton
+import android.view.inputmethod.InputMethodManager
+import android.widget.*
 import androidx.core.content.edit
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -22,6 +22,7 @@ class RuleFragment : Fragment() {
     private lateinit var rvList: RecyclerView
     private lateinit var btSave: ImageButton
     private lateinit var btAdd: ImageButton
+    private lateinit var tvTip: TextView
 
     private val dataList = arrayListOf<RuleEntity>()
     private lateinit var listAdapter: RuleListAdapter
@@ -34,11 +35,17 @@ class RuleFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view.apply {
+        with(view) {
             rvList = findViewById(R.id.rvList)
             btSave = findViewById(R.id.btSave)
             btAdd = findViewById(R.id.btAdd)
+            btAdd = findViewById(R.id.btAdd)
+            tvTip = findViewById(R.id.tvTip)
         }
+        tvTip.text = Html.fromHtml(
+            getString(R.string.tip_rule, App.SPLIT_LETTER),
+            Html.FROM_HTML_MODE_LEGACY
+        )
         listAdapter = RuleListAdapter(dataList) {
             dataList.removeAt(it)
             listAdapter.notifyItemRemoved(it)
@@ -55,6 +62,7 @@ class RuleFragment : Fragment() {
         }
 
         btSave.setOnClickListener {
+            hideKeyboard()
             val haveEmptyEntity =
                 dataList.any {
                     it.actionKeywords.isEmpty()
@@ -207,6 +215,13 @@ class RuleFragment : Fragment() {
                     putString(MyPreferenceProvider.KEY_NAME, MyPreferenceProvider.EMPTY_STR)
                 }
             }
+        }
+    }
+
+    private fun hideKeyboard() {
+        requireActivity().currentFocus?.let {
+            (requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager)
+                .hideSoftInputFromWindow(it.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
         }
     }
 }
