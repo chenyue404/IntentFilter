@@ -34,7 +34,7 @@ class JumpHook : IXposedHookLoadPackage {
             return
         }
 
-        hookCheckBroadcastFromSystem(classLoader)
+//        hookCheckBroadcastFromSystem(classLoader)
         hookStartActivity(classLoader)
 
         when (Build.VERSION.SDK_INT) {
@@ -219,7 +219,7 @@ class JumpHook : IXposedHookLoadPackage {
                             "blocked=$indexList"
                 )
 
-                mContext.sendBroadcast(Intent().apply {
+                myContext.sendBroadcast(Intent().apply {
                     action = LogReceiver.ACTION
                     putExtra(
                         LogReceiver.EXTRA_KEY, Gson().toJson(
