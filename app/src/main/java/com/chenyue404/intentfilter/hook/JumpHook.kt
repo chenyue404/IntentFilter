@@ -182,7 +182,12 @@ class JumpHook : IXposedHookLoadPackage {
                 if (ruleStr.isNotEmpty() && ruleStr != MyPreferenceProvider.EMPTY_STR) {
                     ruleList.addAll(fromJson<ArrayList<RuleEntity>>(ruleStr))
                 }
-                val needActivityMatch = ruleList.any { ruleEntity ->
+
+                val indexList = hashSetOf<Int>()
+                val activityList = arrayListOf<String>()
+                val newList = arrayListOf<ResolveInfo>()
+
+                for (ruleEntity in ruleList) {
                     val actionMatch = if (ruleEntity.actionKeywords.isEmpty()) true
                     else ruleEntity.actionBlack ==
                             ruleEntity.actionKeywords.split(App.SPLIT_LETTER)
@@ -202,34 +207,30 @@ class JumpHook : IXposedHookLoadPackage {
                     else ruleEntity.uidBlack ==
                             ruleEntity.uids.split(App.SPLIT_LETTER)
                                 .any { filterCallingUid.contains(it) }
-//                    log("actionMatch=$actionMatch--typeMatch=$typeMatch--dataStringMatch=$dataStringMatch--uidMatch=$uidMatch")
-                    actionMatch && typeMatch && dataStringMatch && uidMatch
-                }
+                    val needMatchActivity =
+                        actionMatch && typeMatch && dataStringMatch && uidMatch
 
-                val indexList = arrayListOf<Int>()
-                val activityList = arrayListOf<String>()
-                val newList = arrayListOf<ResolveInfo>()
-                list.forEachIndexed { index, resolveInfo ->
-                    val activityInfo = resolveInfo.activityInfo
-                    val packageName = activityInfo.packageName.toString()
-                    val name = activityInfo.name.toString()
-                    var needFilterOut = false
-                    if (activityInfo != null) {
-                        val activityStr = "$packageName/$name"
-                        activityList.add(activityStr)
-                        needFilterOut = needActivityMatch && ruleList.any { ruleEntity ->
-                            if (ruleEntity.activityKeywords.isEmpty()) true
-                            else ruleEntity.activityBlack ==
-                                    ruleEntity.activityKeywords.split(App.SPLIT_LETTER)
-                                        .any { activityStr.contains(it) }
+                    activityList.clear()
+                    list.forEachIndexed { index, resolveInfo ->
+                        val activityInfo = resolveInfo.activityInfo
+                        var needFilterOut = false
+                        if (activityInfo != null) {
+                            val activityName = "${activityInfo.packageName}/${activityInfo.name}"
+                            activityList.add(activityName)
+                            needFilterOut = needMatchActivity &&
+                                    if (ruleEntity.activityKeywords.isEmpty()) true
+                                    else ruleEntity.activityBlack ==
+                                            ruleEntity.activityKeywords.split(App.SPLIT_LETTER)
+                                                .any { activityName.contains(it) }
+                        }
+                        if (needFilterOut) {
+                            indexList.add(index)
+                        } else {
+//                            newList.add(resolveInfo)
                         }
                     }
-                    if (needFilterOut) {
-                        indexList.add(index)
-                    } else {
-                        newList.add(resolveInfo)
-                    }
                 }
+
                 log(
                     "intent=$intent\n" +
                             "uid=$filterCallingUid\n" +
@@ -259,7 +260,11 @@ class JumpHook : IXposedHookLoadPackage {
                 }
 
                 if (indexList.isNotEmpty()) {
-                    param.result = newList
+                    val mutableList = list.toMutableList()
+                    indexList.sortedByDescending { it }.forEach {
+                        mutableList.removeAt(it)
+                    }
+                    param.result = mutableList
                 }
             }
         }
