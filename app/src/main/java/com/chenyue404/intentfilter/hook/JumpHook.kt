@@ -1,21 +1,18 @@
 package com.chenyue404.intentfilter.hook
 
-import android.app.AndroidAppHelper
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
 import android.os.Build
-import android.os.Handler
 import android.text.TextUtils
-import com.chenyue404.intentfilter.*
+import com.chenyue404.intentfilter.App
+import com.chenyue404.intentfilter.BuildConfig
+import com.chenyue404.intentfilter.LogReceiver
 import com.chenyue404.intentfilter.entity.LogEntity
 import com.chenyue404.intentfilter.entity.RuleEntity
-import com.crossbowffs.remotepreferences.RemotePreferences
+import com.chenyue404.intentfilter.fromJson
 import com.google.gson.Gson
-import de.robv.android.xposed.IXposedHookLoadPackage
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedBridge
-import de.robv.android.xposed.XposedHelpers
+import de.robv.android.xposed.*
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class JumpHook : IXposedHookLoadPackage {
@@ -147,46 +144,29 @@ class JumpHook : IXposedHookLoadPackage {
                     "mContext"
                 )
                 val mContext = contextField[param.thisObject] as Context
-                val myContext = AndroidAppHelper.currentApplication().createPackageContext(
-                    BuildConfig.APPLICATION_ID,
-                    Context.CONTEXT_IGNORE_SECURITY
-                )
-                val handlerField = XposedHelpers.findFieldIfExists(
-                    param.thisObject.javaClass,
-                    "mHandler"
-                )
-                val providerAuthority = myContext.getString(
-                    getResourceIdByName(
-                        myContext,
-                        "provider_authority"
-                    )
-                )
                 if (ruleStr.isEmpty()
                     || (!TextUtils.isEmpty(intentCompPackage) && intentCompPackage == BuildConfig.APPLICATION_ID)
                 ) {
-                    val mHandler = handlerField[param.thisObject] as Handler
-
-//                    log("$TAG ruleStr读取之前=$ruleStr")
-                    mHandler.post {
-                        ruleStr = RemotePreferences(
-                            mContext,
-                            providerAuthority,
-                            MyPreferenceProvider.PREF_NAME
-                        ).getString(MyPreferenceProvider.KEY_NAME, "").toString()
-//                        log("$TAG ruleStr读取=$ruleStr")
-                    }
+//                    log("ruleStr读取之前=$ruleStr")
+                    ruleStr = XSharedPreferences(
+                        BuildConfig.APPLICATION_ID,
+                        App.PREF_NAME
+                    ).getString(App.KEY_NAME, "").toString()
                 } else {
-//                    log("$TAG ruleStr有值=$ruleStr")
+//                    log("ruleStr有值=$ruleStr")
                 }
                 val ruleList = arrayListOf<RuleEntity>()
-                if (ruleStr.isNotEmpty() && ruleStr != MyPreferenceProvider.EMPTY_STR) {
+                if (ruleStr.isNotEmpty() && ruleStr != App.EMPTY_STR) {
                     ruleList.addAll(fromJson<ArrayList<RuleEntity>>(ruleStr))
                 }
 
-                val indexList = hashSetOf<Int>()
-                val activityList = arrayListOf<String>()
-                val newList = arrayListOf<ResolveInfo>()
+                val activityList = list.map {
+                    val activityInfo = it.activityInfo
+                    val activityName = "${activityInfo.packageName}/${activityInfo.name}"
+                    activityName
+                }
 
+                val indexList = hashSetOf<Int>()
                 for (ruleEntity in ruleList) {
                     val actionMatch = if (ruleEntity.actionKeywords.isEmpty()) true
                     else ruleEntity.actionBlack ==
@@ -210,13 +190,11 @@ class JumpHook : IXposedHookLoadPackage {
                     val needMatchActivity =
                         actionMatch && typeMatch && dataStringMatch && uidMatch
 
-                    activityList.clear()
                     list.forEachIndexed { index, resolveInfo ->
                         val activityInfo = resolveInfo.activityInfo
                         var needFilterOut = false
                         if (activityInfo != null) {
                             val activityName = "${activityInfo.packageName}/${activityInfo.name}"
-                            activityList.add(activityName)
                             needFilterOut = needMatchActivity &&
                                     if (ruleEntity.activityKeywords.isEmpty()) true
                                     else ruleEntity.activityBlack ==
@@ -225,8 +203,6 @@ class JumpHook : IXposedHookLoadPackage {
                         }
                         if (needFilterOut) {
                             indexList.add(index)
-                        } else {
-//                            newList.add(resolveInfo)
                         }
                     }
                 }

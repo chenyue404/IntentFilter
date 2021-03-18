@@ -2,8 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.chenyue404.intentfilter">
 
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-
     <application
         android:name=".App"
         android:icon="@mipmap/ic_launcher"
@@ -22,11 +20,6 @@
             android:name=".ui.EmptyActivity"
             android:theme="@style/TransparentStyle" />
 
-        <provider
-            android:name=".MyPreferenceProvider"
-            android:authorities="@string/provider_authority"
-            android:exported="true" />
-
         <meta-data
             android:name="xposedmodule"
             android:value="true" />
@@ -35,7 +28,13 @@
             android:value="@string/xposed_description" />
         <meta-data
             android:name="xposedminversion"
-            android:value="53" />
+            android:value="93" />
+        <meta-data
+            android:name="xposedsharedprefs"
+            android:value="true" />
+        <meta-data
+            android:name="xposedscope"
+            android:resource="@array/xposed_scope" />
     </application>
 
 </manifest>

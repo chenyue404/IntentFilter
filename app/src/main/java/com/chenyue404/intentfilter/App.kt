@@ -8,6 +8,9 @@ class App : Application() {
         lateinit var gContext: App
         val SPLIT_LETTER = ","
         val TAG = "intentfilter--app-"
+        val PREF_NAME = "main_prefs"
+        val KEY_NAME = "main_prefs_key"
+        val EMPTY_STR = "EMPTY_STR"
     }
 
     override fun attachBaseContext(base: Context) {

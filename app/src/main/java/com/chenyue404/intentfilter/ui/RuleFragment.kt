@@ -78,13 +78,13 @@ class RuleFragment : Fragment() {
             }
 
             if (dataList.isNullOrEmpty()) {
-                getSP().edit(true) {
-                    putString(MyPreferenceProvider.KEY_NAME, MyPreferenceProvider.EMPTY_STR)
+                getSP()?.edit(true) {
+                    putString(App.KEY_NAME, App.EMPTY_STR)
                 }
             } else {
                 val str = Gson().toJson(dataList)
-                getSP().edit(true) {
-                    putString(MyPreferenceProvider.KEY_NAME, str)
+                getSP()?.edit(true) {
+                    putString(App.KEY_NAME, str)
                 }
             }
             startActivity(Intent(requireContext(), EmptyActivity::class.java))
@@ -101,9 +101,9 @@ class RuleFragment : Fragment() {
     }
 
     private fun readPerf() {
-        val str = getSP().getString(MyPreferenceProvider.KEY_NAME, MyPreferenceProvider.EMPTY_STR)
+        val str = getSP()?.getString(App.KEY_NAME, App.EMPTY_STR)
             ?: return
-        if (str == MyPreferenceProvider.EMPTY_STR) return
+        if (str == App.EMPTY_STR) return
 
         val list = fromJson<ArrayList<RuleEntity>>(str)
 
@@ -203,16 +203,21 @@ class RuleFragment : Fragment() {
         override fun getItemCount() = dataList.size
     }
 
-    private fun getSP() = requireContext().getSharedPreferences(
-        MyPreferenceProvider.PREF_NAME,
-        Context.MODE_PRIVATE
-    )
+    private fun getSP() = try {
+        requireContext().getSharedPreferences(
+            App.PREF_NAME,
+            Context.MODE_WORLD_READABLE
+        )
+    } catch (e: SecurityException) {
+        // The new XSharedPreferences is not enabled or module's not loading
+        null // other fallback, if any
+    }
 
     private fun writeEmptyStr() {
-        with(getSP()) {
-            if (getString(MyPreferenceProvider.KEY_NAME, "").toString().isEmpty()) {
-                edit(true) {
-                    putString(MyPreferenceProvider.KEY_NAME, MyPreferenceProvider.EMPTY_STR)
+        getSP()?.let {
+            if (it.getString(App.KEY_NAME, "").toString().isEmpty()) {
+                it.edit(true) {
+                    putString(App.KEY_NAME, App.EMPTY_STR)
                 }
             }
         }

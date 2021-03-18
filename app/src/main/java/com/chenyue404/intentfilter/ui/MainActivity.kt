@@ -1,12 +1,9 @@
 package com.chenyue404.intentfilter.ui
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.os.PowerManager
-import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
@@ -57,19 +54,6 @@ class MainActivity : AppCompatActivity() {
         selectTab(0)
         tvLog.setOnClickListener { selectTab(0) }
         tvRule.setOnClickListener { selectTab(1) }
-
-        if (!(getSystemService(Context.POWER_SERVICE) as PowerManager)
-                .isIgnoringBatteryOptimizations(packageName)
-        ) {
-            AlertDialog.Builder(this)
-                .setMessage(R.string.batteryTip)
-                .setPositiveButton(android.R.string.ok) { _, _ ->
-                    startActivity(Intent().apply {
-                        action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
-                    })
-                }
-                .create().show()
-        }
     }
 
     private fun selectTab(position: Int) {
