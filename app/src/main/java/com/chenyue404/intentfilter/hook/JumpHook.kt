@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
 import android.os.Build
+import android.os.Handler
 import android.text.TextUtils
 import com.chenyue404.intentfilter.App
 import com.chenyue404.intentfilter.BuildConfig
@@ -213,27 +214,6 @@ class JumpHook : IXposedHookLoadPackage {
                             "activity=$activityList\n" +
                             "blocked=$indexList"
                 )
-                if (list.isNotEmpty()
-                    && (intentAction.isNotEmpty() || dataString.isNotEmpty())
-                    && (intentAction.isEmpty() || intentAction != Intent.ACTION_MAIN)
-                ) {
-                    mContext.sendBroadcast(Intent().apply {
-                        action = LogReceiver.ACTION
-                        putExtra(
-                            LogReceiver.EXTRA_KEY, Gson().toJson(
-                                LogEntity(
-                                    time = System.currentTimeMillis(),
-                                    uid = filterCallingUid,
-                                    action = intentAction,
-                                    type = intentType,
-                                    dataString = dataString,
-                                    activities = activityList.joinToString(separator = App.SPLIT_LETTER),
-                                    blockIndexes = indexList.joinToString(separator = App.SPLIT_LETTER)
-                                )
-                            )
-                        )
-                    })
-                }
 
                 if (indexList.isNotEmpty()) {
                     val mutableList = list.toMutableList()
@@ -241,6 +221,30 @@ class JumpHook : IXposedHookLoadPackage {
                         mutableList.removeAt(it)
                     }
                     param.result = mutableList
+                }
+
+                if (list.isNotEmpty()
+                    && (intentAction.isNotEmpty() || dataString.isNotEmpty())
+                    && (intentAction.isEmpty() || intentAction != Intent.ACTION_MAIN)
+                ) {
+                    Handler(mContext.mainLooper).post {
+                        mContext.sendBroadcast(Intent().apply {
+                            action = LogReceiver.ACTION
+                            putExtra(
+                                LogReceiver.EXTRA_KEY, Gson().toJson(
+                                    LogEntity(
+                                        time = System.currentTimeMillis(),
+                                        uid = filterCallingUid,
+                                        action = intentAction,
+                                        type = intentType,
+                                        dataString = dataString,
+                                        activities = activityList.joinToString(separator = App.SPLIT_LETTER),
+                                        blockIndexes = indexList.joinToString(separator = App.SPLIT_LETTER)
+                                    )
+                                )
+                            )
+                        })
+                    }
                 }
             }
         }
