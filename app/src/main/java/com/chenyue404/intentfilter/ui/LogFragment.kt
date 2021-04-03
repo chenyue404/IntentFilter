@@ -112,8 +112,11 @@ class LogFragment : Fragment() {
                 spanUtils.create()
 
                 val showPackage = View.OnClickListener {
+                    val packagesForUid =
+                        context.packageManager.getPackagesForUid(logEntity.uid.toInt())
+                            ?.joinToString("\n") ?: "NULL"
                     AlertDialog.Builder(context)
-                        .setMessage(context.packageManager.getNameForUid(logEntity.uid.toInt()))
+                        .setMessage(packagesForUid)
                         .create().show()
                 }
                 tvTitleUid.setOnClickListener(showPackage)

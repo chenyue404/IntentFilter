@@ -126,6 +126,13 @@ class JumpHook : IXposedHookLoadPackage {
         )
     }
 
+    private fun getFilterCallingUidIndex() =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            4
+        } else {
+            3
+        }
+
     private fun createCallback(): XC_MethodHook {
         return object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
@@ -139,7 +146,7 @@ class JumpHook : IXposedHookLoadPackage {
                     return
                 }
 
-                val filterCallingUid = (param.args[3] as Int).toString()
+                val filterCallingUid = (param.args[getFilterCallingUidIndex()] as Int).toString()
                 val contextField = XposedHelpers.findFieldIfExists(
                     param.thisObject.javaClass,
                     "mContext"
