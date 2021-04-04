@@ -1,5 +1,6 @@
 package com.chenyue404.intentfilter.ui
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
@@ -9,8 +10,10 @@ import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
+import com.chenyue404.intentfilter.App
 import com.chenyue404.intentfilter.R
 
 class MainActivity : AppCompatActivity() {
@@ -54,6 +57,10 @@ class MainActivity : AppCompatActivity() {
         selectTab(0)
         tvLog.setOnClickListener { selectTab(0) }
         tvRule.setOnClickListener { selectTab(1) }
+        tvLog.setOnLongClickListener {
+            showLogDialog()
+            true
+        }
     }
 
     private fun selectTab(position: Int) {
@@ -96,5 +103,36 @@ class MainActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun showLogDialog() {
+        var showLog = getSP()?.getBoolean(App.KEY_SHOW_LOG_NAME, false)
+            ?: false
+        AlertDialog.Builder(this)
+            .setTitle(R.string.show_log_title)
+            .setSingleChoiceItems(
+                arrayOf("YES", "NO"),
+                1
+            ) { dialog, which ->
+                showLog = which == 0
+            }
+            .setPositiveButton(R.string.save) { dialog, which ->
+                getSP()?.edit {
+                    putBoolean(App.KEY_SHOW_LOG_NAME, showLog)
+                }
+                startActivity(Intent(this, EmptyActivity::class.java))
+            }
+            .create()
+            .show()
+    }
+
+    private fun getSP() = try {
+        getSharedPreferences(
+            App.PREF_NAME,
+            Context.MODE_WORLD_READABLE
+        )
+    } catch (e: SecurityException) {
+        // The new XSharedPreferences is not enabled or module's not loading
+        null // other fallback, if any
     }
 }

@@ -23,6 +23,7 @@ class JumpHook : IXposedHookLoadPackage {
 
     companion object {
         var ruleStr = ""
+        var showLog = false
     }
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
@@ -152,6 +153,12 @@ class JumpHook : IXposedHookLoadPackage {
                     "mContext"
                 )
                 val mContext = contextField[param.thisObject] as Context
+
+                showLog = XSharedPreferences(
+                    BuildConfig.APPLICATION_ID,
+                    App.PREF_NAME
+                ).getBoolean(App.KEY_SHOW_LOG_NAME, false)
+
                 if (ruleStr.isEmpty()
                     || (!TextUtils.isEmpty(intentCompPackage) && intentCompPackage == BuildConfig.APPLICATION_ID)
                 ) {
@@ -163,7 +170,6 @@ class JumpHook : IXposedHookLoadPackage {
                 } else {
 //                    log("ruleStr有值=$ruleStr")
                 }
-                log("ruleStr=$ruleStr")
                 if (ruleStr.contains("\"a\":")) {
                     ruleStr = App.EMPTY_STR
                     log("清除")
@@ -271,7 +277,7 @@ class JumpHook : IXposedHookLoadPackage {
     }
 
     private fun log(str: String) {
-        if (!BuildConfig.DEBUG) return
+        if (!BuildConfig.DEBUG && !showLog) return
         XposedBridge.log("$TAG-$str")
     }
 }
