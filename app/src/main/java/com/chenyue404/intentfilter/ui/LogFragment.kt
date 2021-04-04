@@ -112,9 +112,13 @@ class LogFragment : Fragment() {
                 spanUtils.create()
 
                 val showPackage = View.OnClickListener {
-                    val packagesForUid =
+                    var packagesForUid =
                         context.packageManager.getPackagesForUid(logEntity.uid.toInt())
-                            ?.joinToString("\n") ?: "NULL"
+                            ?.joinToString("\n")
+                            ?: context.packageManager.getNameForUid(logEntity.uid.toInt())
+                    if (packagesForUid.isNullOrEmpty()) {
+                        packagesForUid = "NULL"
+                    }
                     AlertDialog.Builder(context)
                         .setMessage(packagesForUid)
                         .create().show()
