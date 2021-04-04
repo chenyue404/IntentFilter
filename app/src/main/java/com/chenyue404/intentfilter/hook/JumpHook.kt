@@ -163,10 +163,17 @@ class JumpHook : IXposedHookLoadPackage {
                 } else {
 //                    log("ruleStr有值=$ruleStr")
                 }
+                log("ruleStr=$ruleStr")
+                if (ruleStr.contains("\"a\":")) {
+                    ruleStr = App.EMPTY_STR
+                    log("清除")
+                }
                 val ruleList = arrayListOf<RuleEntity>()
                 if (ruleStr.isNotEmpty() && ruleStr != App.EMPTY_STR) {
                     ruleList.addAll(fromJson<ArrayList<RuleEntity>>(ruleStr))
                 }
+                val ruleIsEmpty =
+                    ruleStr.isEmpty() || ruleStr == App.EMPTY_STR || ruleList.isNullOrEmpty()
 
                 val activityList = list.map {
                     val activityInfo = it.activityInfo
@@ -175,43 +182,54 @@ class JumpHook : IXposedHookLoadPackage {
                 }
 
                 val indexList = hashSetOf<Int>()
-                for (ruleEntity in ruleList) {
-                    val actionMatch = if (ruleEntity.actionKeywords.isEmpty()) true
-                    else ruleEntity.actionBlack ==
-                            ruleEntity.actionKeywords.split(App.SPLIT_LETTER)
-                                .any { intentAction.contains(it) }
+                if (!ruleIsEmpty) {
+                    for (ruleEntity in ruleList) {
+                        val actionMatch = if (ruleEntity.actionKeywords.isEmpty()) true
+                        else ruleEntity.actionBlack ==
+                                ruleEntity.actionKeywords.split(App.SPLIT_LETTER)
+                                    .any { intentAction.contains(it) }
 
-                    val typeMatch = if (ruleEntity.typeKeywords.isEmpty()) true
-                    else ruleEntity.typeBlack ==
-                            ruleEntity.typeKeywords.split(App.SPLIT_LETTER)
-                                .any { intentType.contains(it) }
+                        val typeMatch = if (ruleEntity.typeKeywords.isEmpty()) true
+                        else ruleEntity.typeBlack ==
+                                ruleEntity.typeKeywords.split(App.SPLIT_LETTER)
+                                    .any { intentType.contains(it) }
 
-                    val dataStringMatch = if (ruleEntity.dataStringKeywords.isEmpty()) true
-                    else ruleEntity.dataStringBlack ==
-                            ruleEntity.dataStringKeywords.split(App.SPLIT_LETTER)
-                                .any { dataString.contains(it) }
+                        val dataStringMatch = if (ruleEntity.dataStringKeywords.isEmpty()) true
+                        else ruleEntity.dataStringBlack ==
+                                ruleEntity.dataStringKeywords.split(App.SPLIT_LETTER)
+                                    .any { dataString.contains(it) }
 
-                    val uidMatch = if (ruleEntity.uids.isEmpty()) true
-                    else ruleEntity.uidBlack ==
-                            ruleEntity.uids.split(App.SPLIT_LETTER)
-                                .any { filterCallingUid.contains(it) }
-                    val needMatchActivity =
-                        actionMatch && typeMatch && dataStringMatch && uidMatch
+                        val uidMatch = if (ruleEntity.uids.isEmpty()) true
+                        else ruleEntity.uidBlack ==
+                                ruleEntity.uids.split(App.SPLIT_LETTER)
+                                    .any { filterCallingUid.contains(it) }
+                        val needMatchActivity =
+                            actionMatch && typeMatch && dataStringMatch && uidMatch
 
-                    list.forEachIndexed { index, resolveInfo ->
-                        val activityInfo = resolveInfo.activityInfo
-                        var needFilterOut = false
-                        if (activityInfo != null) {
-                            val activityName = "${activityInfo.packageName}/${activityInfo.name}"
-                            needFilterOut = needMatchActivity &&
-                                    if (ruleEntity.activityKeywords.isEmpty()) true
-                                    else ruleEntity.activityBlack ==
-                                            ruleEntity.activityKeywords.split(App.SPLIT_LETTER)
-                                                .any { activityName.contains(it) }
+                        list.forEachIndexed { index, resolveInfo ->
+                            val activityInfo = resolveInfo.activityInfo
+                            var needFilterOut = false
+                            if (activityInfo != null) {
+                                val activityName =
+                                    "${activityInfo.packageName}/${activityInfo.name}"
+                                needFilterOut = needMatchActivity &&
+                                        if (ruleEntity.activityKeywords.isEmpty()) true
+                                        else ruleEntity.activityBlack ==
+                                                ruleEntity.activityKeywords.split(App.SPLIT_LETTER)
+                                                    .any { activityName.contains(it) }
+                            }
+                            if (needFilterOut) {
+                                indexList.add(index)
+                            }
                         }
-                        if (needFilterOut) {
-                            indexList.add(index)
+                    }
+
+                    if (indexList.isNotEmpty()) {
+                        val mutableList = list.toMutableList()
+                        indexList.sortedByDescending { it }.forEach {
+                            mutableList.removeAt(it)
                         }
+                        param.result = mutableList
                     }
                 }
 
@@ -221,14 +239,6 @@ class JumpHook : IXposedHookLoadPackage {
                             "activity=$activityList\n" +
                             "blocked=$indexList"
                 )
-
-                if (indexList.isNotEmpty()) {
-                    val mutableList = list.toMutableList()
-                    indexList.sortedByDescending { it }.forEach {
-                        mutableList.removeAt(it)
-                    }
-                    param.result = mutableList
-                }
 
                 if (list.isNotEmpty()
                     && (intentAction.isNotEmpty() || dataString.isNotEmpty())

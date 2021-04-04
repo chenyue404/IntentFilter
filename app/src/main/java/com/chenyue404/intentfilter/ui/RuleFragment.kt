@@ -196,7 +196,10 @@ class RuleFragment : Fragment() {
                 tbUid.setOnCheckedChangeListener { _, isChecked ->
                     ruleEntity.uidBlack = isChecked
                 }
-                ibDelete.setOnClickListener { deleteFun(position) }
+                ibDelete.setOnClickListener {
+                    val index = dataList.indexOf(ruleEntity)
+                    if (index >= 0) deleteFun(index)
+                }
             }
         }
 
