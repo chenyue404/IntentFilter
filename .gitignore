@@ -15,3 +15,5 @@
 local.properties
 /.idea
 /gradle
+certification.properties
+*.jks

@@ -82,7 +82,9 @@ class JumpHook : IXposedHookLoadPackage {
                     createCallback()
                 )
             }
-            Build.VERSION_CODES.R -> {
+            Build.VERSION_CODES.R,
+            Build.VERSION_CODES.S,
+            Build.VERSION_CODES.S_V2 -> {
                 XposedHelpers.findAndHookMethod(
                     "com.android.server.pm.PackageManagerService",
                     classLoader,
