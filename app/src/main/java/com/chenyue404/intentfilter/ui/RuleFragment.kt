@@ -77,7 +77,7 @@ class RuleFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            if (dataList.isNullOrEmpty()) {
+            if (dataList.isEmpty()) {
                 getSP()?.edit(true) {
                     putString(App.KEY_NAME, App.EMPTY_STR)
                 }

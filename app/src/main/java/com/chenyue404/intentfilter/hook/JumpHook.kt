@@ -1,5 +1,6 @@
 package com.chenyue404.intentfilter.hook
 
+import android.app.AndroidAppHelper
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
@@ -99,6 +100,16 @@ class JumpHook : IXposedHookLoadPackage {
                     Boolean::class.java,
                     createCallback()
                 )
+                XposedHelpers.findAndHookMethod(
+                    "com.android.server.pm.PackageManagerService.ComputerTracker",
+                    classLoader,
+                    "queryIntentActivitiesInternal",
+                    Intent::class.java,
+                    String::class.java,
+                    Int::class.java,
+                    Int::class.java,
+                    createCallback()
+                )
             }
         }
     }
@@ -149,12 +160,16 @@ class JumpHook : IXposedHookLoadPackage {
                     return
                 }
 
-                val filterCallingUid = (param.args[getFilterCallingUidIndex()] as Int).toString()
+                val filterCallingUid =
+                    (param.args.getOrNull(getFilterCallingUidIndex()) ?: "null").toString()
                 val contextField = XposedHelpers.findFieldIfExists(
                     param.thisObject.javaClass,
                     "mContext"
                 )
-                val mContext = contextField[param.thisObject] as Context
+                val mContext = (contextField?.get(param.thisObject)
+                    ?: AndroidAppHelper.currentApplication().applicationContext) as Context
+
+//                val mContext = AndroidAppHelper.currentApplication().applicationContext
 
                 showLog = XSharedPreferences(
                     BuildConfig.APPLICATION_ID,
