@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
@@ -17,8 +16,8 @@ import com.chenyue404.intentfilter.entity.LogEntity
 class LogFragment : Fragment() {
     private val TAG = "intentfilter-hook-"
 
-    private lateinit var rvList: RecyclerView
-    private lateinit var btClear: ImageButton
+    private val rvList: RecyclerView by lazy { requireView().findViewById(R.id.rvList) }
+    private val btClear: ImageButton by lazy { requireView().findViewById(R.id.btClear) }
 
     private lateinit var logReceiver: LogReceiver
     private val dataList = arrayListOf<LogEntity>()
@@ -28,14 +27,10 @@ class LogFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ) = inflater.inflate(R.layout.fragment_log, container, false)
+    ): View = inflater.inflate(R.layout.fragment_log, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view.apply {
-            rvList = findViewById(R.id.rvList)
-            btClear = findViewById(R.id.btClear)
-        }
 
         rvList.apply {
             addItemDecoration(
@@ -74,13 +69,12 @@ class LogFragment : Fragment() {
         RecyclerView.Adapter<LogListAdapter.ViewHolder>() {
 
         private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val tvTime = itemView.findViewById<TextView>(R.id.tvTime)
-            val tvUid = itemView.findViewById<TextView>(R.id.tvUid)
-            val tvTitleUid = itemView.findViewById<TextView>(R.id.tvTitleUid)
-            val tvAction = itemView.findViewById<TextView>(R.id.tvAction)
-            val tvType = itemView.findViewById<TextView>(R.id.tvType)
-            val tvDataString = itemView.findViewById<TextView>(R.id.tvDataString)
-            val tvActivities = itemView.findViewById<TextView>(R.id.tvActivities)
+            val tvTime: TextView = itemView.findViewById(R.id.tvTime)
+            val tvFrom: TextView = itemView.findViewById(R.id.tvFrom)
+            val tvAction: TextView = itemView.findViewById(R.id.tvAction)
+            val tvType: TextView = itemView.findViewById(R.id.tvType)
+            val tvDataString: TextView = itemView.findViewById(R.id.tvDataString)
+            val tvActivities: TextView = itemView.findViewById(R.id.tvActivities)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder = ViewHolder(
@@ -94,7 +88,7 @@ class LogFragment : Fragment() {
             val indexList = logEntity.blockIndexes.split(App.SPLIT_LETTER)
             with(holder) {
                 tvTime.text = logEntity.time.timeToStr()
-                tvUid.text = logEntity.uid
+                tvFrom.text = logEntity.from.replace(App.SPLIT_LETTER, "\n")
                 tvAction.text = logEntity.action
                 tvType.text = logEntity.type
                 tvDataString.text = logEntity.dataString
@@ -110,20 +104,6 @@ class LogFragment : Fragment() {
                         )
                 }
                 spanUtils.create()
-
-                val showPackage = View.OnClickListener {
-                    val uid = logEntity.uid.toIntOrNull()
-                    val packagesForUid =
-                        uid?.let {
-                            context.packageManager.getPackagesForUid(it)?.joinToString("\n")
-                                ?: context.packageManager.getNameForUid(it)
-                        } ?: "null"
-                    AlertDialog.Builder(context)
-                        .setMessage(packagesForUid)
-                        .create().show()
-                }
-                tvTitleUid.setOnClickListener(showPackage)
-                tvUid.setOnClickListener(showPackage)
             }
         }
 

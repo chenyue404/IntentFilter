@@ -27,6 +27,13 @@ class JumpHook : IXposedHookLoadPackage {
         var showLog = false
     }
 
+    private val sp by lazy {
+        XSharedPreferences(
+            BuildConfig.APPLICATION_ID,
+            App.PREF_NAME
+        )
+    }
+
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
         val packageName = lpparam.packageName
         val classLoader = lpparam.classLoader
@@ -36,11 +43,11 @@ class JumpHook : IXposedHookLoadPackage {
         }
 
         hookCheckBroadcastFromSystem(classLoader)
-        hookStartActivity(classLoader)
 
-        when (Build.VERSION.SDK_INT) {
-            Build.VERSION_CODES.N,
-            Build.VERSION_CODES.N_MR1 -> {
+        val version = Build.VERSION.SDK_INT
+
+        when {
+            version <= Build.VERSION_CODES.N_MR1 -> {
                 XposedHelpers.findAndHookMethod(
                     "com.android.server.pm.PackageManagerService",
                     classLoader,
@@ -49,10 +56,10 @@ class JumpHook : IXposedHookLoadPackage {
                     String::class.java,
                     Int::class.java,
                     Int::class.java,
-                    createCallback()
+                    callBackHook
                 )
             }
-            Build.VERSION_CODES.O -> {
+            version == Build.VERSION_CODES.O -> {
                 XposedHelpers.findAndHookMethod(
                     "com.android.server.pm.PackageManagerService",
                     classLoader,
@@ -63,12 +70,10 @@ class JumpHook : IXposedHookLoadPackage {
                     Int::class.java,
                     Int::class.java,
                     Boolean::class.java,
-                    createCallback()
+                    callBackHook
                 )
             }
-            Build.VERSION_CODES.O_MR1,
-            Build.VERSION_CODES.P,
-            Build.VERSION_CODES.Q -> {
+            version <= Build.VERSION_CODES.Q -> {
                 XposedHelpers.findAndHookMethod(
                     "com.android.server.pm.PackageManagerService",
                     classLoader,
@@ -80,14 +85,12 @@ class JumpHook : IXposedHookLoadPackage {
                     Int::class.java,
                     Boolean::class.java,
                     Boolean::class.java,
-                    createCallback()
+                    callBackHook
                 )
             }
-            Build.VERSION_CODES.R,
-            Build.VERSION_CODES.S,
-            Build.VERSION_CODES.S_V2 -> {
+            else -> {
                 XposedHelpers.findAndHookMethod(
-                    "com.android.server.pm.PackageManagerService",
+                    "com.android.server.pm.PackageManagerService.ComputerTracker",
                     classLoader,
                     "queryIntentActivitiesInternal",
                     Intent::class.java,
@@ -98,7 +101,7 @@ class JumpHook : IXposedHookLoadPackage {
                     Int::class.java,
                     Boolean::class.java,
                     Boolean::class.java,
-                    createCallback()
+                    callBackHook
                 )
                 XposedHelpers.findAndHookMethod(
                     "com.android.server.pm.PackageManagerService.ComputerTracker",
@@ -108,7 +111,7 @@ class JumpHook : IXposedHookLoadPackage {
                     String::class.java,
                     Int::class.java,
                     Int::class.java,
-                    createCallback()
+                    callBackHook
                 )
             }
         }
@@ -147,8 +150,8 @@ class JumpHook : IXposedHookLoadPackage {
             3
         }
 
-    private fun createCallback(): XC_MethodHook {
-        return object : XC_MethodHook() {
+    private val callBackHook by lazy {
+        object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 val intent = param.args[0] as Intent
                 val intentAction = intent.action ?: ""
@@ -156,34 +159,36 @@ class JumpHook : IXposedHookLoadPackage {
                 val intentCompPackage = intent.component?.packageName ?: ""
                 val dataString = intent.dataString ?: ""
                 val list = param.result as List<ResolveInfo>
-                if (list.isNullOrEmpty() || (intentAction == Intent.ACTION_MAIN && intentCompPackage != BuildConfig.APPLICATION_ID)) {
+                if (list.isEmpty() || (intentAction == Intent.ACTION_MAIN && intentCompPackage != BuildConfig.APPLICATION_ID)) {
                     return
                 }
 
                 val filterCallingUid =
                     (param.args.getOrNull(getFilterCallingUidIndex()) ?: "null").toString()
+                val callingPkg = filterCallingUid.toIntOrNull()?.let {
+                    XposedHelpers.callMethod(
+                        param.thisObject,
+                        "getPackagesForUid",
+                        it
+                    ) as Array<String>
+                }?.joinToString(App.SPLIT_LETTER) ?: ""
                 val contextField = XposedHelpers.findFieldIfExists(
                     param.thisObject.javaClass,
                     "mContext"
                 )
-                val mContext = (contextField?.get(param.thisObject)
-                    ?: AndroidAppHelper.currentApplication().applicationContext) as Context
+                val mContext = contextField?.get(param.thisObject) as Context?
+                    ?: AndroidAppHelper.currentApplication().applicationContext
 
 //                val mContext = AndroidAppHelper.currentApplication().applicationContext
 
-                showLog = XSharedPreferences(
-                    BuildConfig.APPLICATION_ID,
-                    App.PREF_NAME
-                ).getBoolean(App.KEY_SHOW_LOG_NAME, false)
+                sp.reload()
+                showLog = sp.getBoolean(App.KEY_SHOW_LOG_NAME, false)
 
                 if (ruleStr.isEmpty()
                     || (!TextUtils.isEmpty(intentCompPackage) && intentCompPackage == BuildConfig.APPLICATION_ID)
                 ) {
 //                    log("ruleStr读取之前=$ruleStr")
-                    ruleStr = XSharedPreferences(
-                        BuildConfig.APPLICATION_ID,
-                        App.PREF_NAME
-                    ).getString(App.KEY_NAME, "").toString()
+                    ruleStr = sp.getString(App.KEY_NAME, "").toString()
                 } else {
 //                    log("ruleStr有值=$ruleStr")
                 }
@@ -196,7 +201,7 @@ class JumpHook : IXposedHookLoadPackage {
                     ruleList.addAll(fromJson<ArrayList<RuleEntity>>(ruleStr))
                 }
                 val ruleIsEmpty =
-                    ruleStr.isEmpty() || ruleStr == App.EMPTY_STR || ruleList.isNullOrEmpty()
+                    ruleStr.isEmpty() || ruleStr == App.EMPTY_STR || ruleList.isEmpty()
 
                 val activityList = list.map {
                     val activityInfo = it.activityInfo
@@ -222,12 +227,12 @@ class JumpHook : IXposedHookLoadPackage {
                                 ruleEntity.dataStringKeywords.split(App.SPLIT_LETTER)
                                     .any { dataString.contains(it) }
 
-                        val uidMatch = if (ruleEntity.uids.isEmpty()) true
-                        else ruleEntity.uidBlack ==
-                                ruleEntity.uids.split(App.SPLIT_LETTER)
-                                    .any { filterCallingUid.contains(it) }
+                        val fromMatch = if (ruleEntity.from.isEmpty()) true
+                        else ruleEntity.fromBlack ==
+                                ruleEntity.from.split(App.SPLIT_LETTER)
+                                    .any { callingPkg.contains(it) }
                         val needMatchActivity =
-                            actionMatch && typeMatch && dataStringMatch && uidMatch
+                            actionMatch && typeMatch && dataStringMatch && fromMatch
 
                         list.forEachIndexed { index, resolveInfo ->
                             val activityInfo = resolveInfo.activityInfo
@@ -258,7 +263,7 @@ class JumpHook : IXposedHookLoadPackage {
 
                 log(
                     "intent=$intent\n" +
-                            "uid=$filterCallingUid\n" +
+                            "from=$callingPkg\n" +
                             "activity=$activityList\n" +
                             "blocked=$indexList"
                 )
@@ -268,29 +273,26 @@ class JumpHook : IXposedHookLoadPackage {
                     && (intentAction.isEmpty() || intentAction != Intent.ACTION_MAIN)
                 ) {
                     Handler(mContext.mainLooper).post {
-                        mContext.sendBroadcast(Intent().apply {
-                            action = LogReceiver.ACTION
-                            putExtra(
-                                LogReceiver.EXTRA_KEY, Gson().toJson(
-                                    LogEntity(
-                                        time = System.currentTimeMillis(),
-                                        uid = filterCallingUid,
-                                        action = intentAction,
-                                        type = intentType,
-                                        dataString = dataString,
-                                        activities = activityList.joinToString(separator = App.SPLIT_LETTER),
-                                        blockIndexes = indexList.joinToString(separator = App.SPLIT_LETTER)
+                        mContext.sendBroadcast(
+                            Intent().setAction(LogReceiver.ACTION)
+                                .putExtra(
+                                    LogReceiver.EXTRA_KEY, Gson().toJson(
+                                        LogEntity(
+                                            time = System.currentTimeMillis(),
+                                            from = callingPkg,
+                                            action = intentAction,
+                                            type = intentType,
+                                            dataString = dataString,
+                                            activities = activityList.joinToString(separator = App.SPLIT_LETTER),
+                                            blockIndexes = indexList.joinToString(separator = App.SPLIT_LETTER)
+                                        )
                                     )
                                 )
-                            )
-                        })
+                        )
                     }
                 }
             }
         }
-    }
-
-    private fun hookStartActivity(classLoader: ClassLoader) {
     }
 
     private fun log(str: String) {

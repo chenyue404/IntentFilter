@@ -2,6 +2,7 @@
 <resources>
     <string name="xposed_description">过滤intent</string>
     <string name="time">时间</string>
+    <string name="from">来自</string>
     <string name="actionContain">Action包含</string>
     <string name="typeContain">Type包含</string>
     <string name="dataStringContain">dataString包含</string>

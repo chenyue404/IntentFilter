@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/time"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -22,27 +22,30 @@
         style="@style/TextAppearance.AppCompat.Body1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="@id/tvTitleTime"
+        android:gravity="end"
+        app:layout_constraintEnd_toEndOf="@id/tvTitleTime"
         app:layout_constraintTop_toBottomOf="@id/tvTitleTime"
         tools:text="@tools:sample/date/hhmmss" />
 
     <TextView
-        android:id="@+id/tvTitleUid"
+        android:id="@+id/tvTitleFrom"
         style="@style/TextAppearance.AppCompat.Title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/uid"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:text="@string/from"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/tvUid"
+        android:id="@+id/tvFrom"
         style="@style/TextAppearance.AppCompat.Body1"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="@id/tvTitleUid"
-        app:layout_constraintTop_toBottomOf="@id/tvTitleUid"
-        tools:text="@tools:sample/full_names" />
+        android:textIsSelectable="true"
+        app:layout_constraintEnd_toStartOf="@id/tvTime"
+        app:layout_constraintStart_toStartOf="@id/tvTitleFrom"
+        app:layout_constraintTop_toBottomOf="@id/tvTitleFrom"
+        tools:text="@tools:sample/cities" />
 
     <TextView
         android:id="@+id/tvTitleAction"
@@ -51,7 +54,7 @@
         android:layout_height="wrap_content"
         android:text="@string/action"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTime" />
+        app:layout_constraintTop_toBottomOf="@id/tvFrom" />
 
     <TextView
         android:id="@+id/tvAction"

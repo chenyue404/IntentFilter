@@ -2,8 +2,8 @@
     <string name="app_name" translatable="false">Intent Filter</string>
     <string name="xposed_description">Intent Filter</string>
     <string name="time">Time</string>
+    <string name="from">From</string>
     <string name="callingPackage" translatable="false">callingPackage</string>
-    <string name="uid" translatable="false">Uid</string>
     <string name="dataString" translatable="false">DataString</string>
     <string name="action" translatable="false">Action</string>
     <string name="type" translatable="false">Type</string>

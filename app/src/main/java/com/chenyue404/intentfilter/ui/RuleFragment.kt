@@ -69,7 +69,7 @@ class RuleFragment : Fragment() {
                             && it.typeKeywords.isEmpty()
                             && it.dataStringKeywords.isEmpty()
                             && it.activityKeywords.isEmpty()
-                            && it.uids.isEmpty()
+                            && it.from.isEmpty()
                 }
             if (haveEmptyEntity) {
                 Toast.makeText(requireContext(), getString(R.string.noEmpty), Toast.LENGTH_SHORT)
@@ -127,12 +127,12 @@ class RuleFragment : Fragment() {
             val etType: EditText = itemView.findViewById(R.id.etType)
             val etDataString: EditText = itemView.findViewById(R.id.etDataString)
             val etActivity: EditText = itemView.findViewById(R.id.etActivity)
-            val etUid: EditText = itemView.findViewById(R.id.etUid)
+            val etFrom: EditText = itemView.findViewById(R.id.etFrom)
             val tbAction: ToggleButton = itemView.findViewById(R.id.tbAction)
             val tbType: ToggleButton = itemView.findViewById(R.id.tbType)
             val tbDataString: ToggleButton = itemView.findViewById(R.id.tbDataString)
             val tbActivity: ToggleButton = itemView.findViewById(R.id.tbActivity)
-            val tbUid: ToggleButton = itemView.findViewById(R.id.tbUid)
+            val tbFrom: ToggleButton = itemView.findViewById(R.id.tbFrom)
             val ibDelete: ImageButton = itemView.findViewById(R.id.ibDelete)
         }
 
@@ -147,7 +147,7 @@ class RuleFragment : Fragment() {
                 etType.setText(ruleEntity.typeKeywords)
                 etDataString.setText(ruleEntity.dataStringKeywords)
                 etActivity.setText(ruleEntity.activityKeywords)
-                etUid.setText(ruleEntity.uids)
+                etFrom.setText(ruleEntity.from)
 
                 tbAction.isChecked = ruleEntity.actionBlack
                 tbAction.visible(ruleEntity.actionKeywords.isNotEmpty())
@@ -157,8 +157,8 @@ class RuleFragment : Fragment() {
                 tbDataString.visible(ruleEntity.dataStringKeywords.isNotEmpty())
                 tbActivity.isChecked = ruleEntity.activityBlack
                 tbActivity.visible(ruleEntity.activityKeywords.isNotEmpty())
-                tbUid.isChecked = ruleEntity.uidBlack
-                tbUid.visible(ruleEntity.uids.isNotEmpty())
+                tbFrom.isChecked = ruleEntity.fromBlack
+                tbFrom.visible(ruleEntity.from.isNotEmpty())
 
                 etAction.doAfterTextChanged {
                     ruleEntity.actionKeywords = it.toString()
@@ -176,9 +176,9 @@ class RuleFragment : Fragment() {
                     ruleEntity.activityKeywords = it.toString()
                     tbActivity.visible(it.toString().isNotEmpty())
                 }
-                etUid.doAfterTextChanged {
-                    ruleEntity.uids = it.toString()
-                    tbUid.visible(it.toString().isNotEmpty())
+                etFrom.doAfterTextChanged {
+                    ruleEntity.from = it.toString()
+                    tbFrom.visible(it.toString().isNotEmpty())
                 }
 
                 tbAction.setOnCheckedChangeListener { _, isChecked ->
@@ -193,8 +193,8 @@ class RuleFragment : Fragment() {
                 tbActivity.setOnCheckedChangeListener { _, isChecked ->
                     ruleEntity.activityBlack = isChecked
                 }
-                tbUid.setOnCheckedChangeListener { _, isChecked ->
-                    ruleEntity.uidBlack = isChecked
+                tbFrom.setOnCheckedChangeListener { _, isChecked ->
+                    ruleEntity.fromBlack = isChecked
                 }
                 ibDelete.setOnClickListener {
                     val index = dataList.indexOf(ruleEntity)

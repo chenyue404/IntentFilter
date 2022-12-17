@@ -14,14 +14,14 @@ class Utils {
 }
 
 fun Long.timeToStr(): String =
-    SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ROOT).format(this)
+    SimpleDateFormat("yyyy-MM-dd\nHH:mm:ss.SSS", Locale.ROOT).format(this)
 
 fun Int.dp2Px(context: Context): Int {
     return (this * context.resources.displayMetrics.density + 0.5f).toInt()
 }
 
 inline fun <reified T> fromJson(json: String?): T {
-    return Gson().fromJson<T>(json, object : TypeToken<T>() {}.type)
+    return Gson().fromJson(json, object : TypeToken<T>() {}.type)
 }
 
 fun getResourceIdByName(context: Context, name: String): Int {

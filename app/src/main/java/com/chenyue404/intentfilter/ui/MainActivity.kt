@@ -17,9 +17,9 @@ import com.chenyue404.intentfilter.App
 import com.chenyue404.intentfilter.R
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var vpContent: ViewPager
-    private lateinit var tvLog: TextView
-    private lateinit var tvRule: TextView
+    private val vpContent: ViewPager by lazy { findViewById(R.id.vpContent) }
+    private val tvLog: TextView by lazy { findViewById(R.id.tvLog) }
+    private val tvRule: TextView by lazy { findViewById(R.id.tvRule) }
 
     private val logFragment by lazy { LogFragment() }
     private val ruleFragment by lazy { RuleFragment() }
@@ -27,9 +27,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        vpContent = findViewById(R.id.vpContent)
-        tvLog = findViewById(R.id.tvLog)
-        tvRule = findViewById(R.id.tvRule)
 
         vpContent.adapter = object : FragmentPagerAdapter(
             supportFragmentManager,

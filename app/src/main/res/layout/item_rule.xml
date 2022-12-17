@@ -68,16 +68,16 @@
         app:layout_constraintTop_toBottomOf="@id/etDataString" />
 
     <ToggleButton
-        android:id="@+id/tbUid"
+        android:id="@+id/tbFrom"
         style="@style/RuleToggleButton"
         app:layout_constraintEnd_toStartOf="@id/ibDelete"
         app:layout_constraintTop_toBottomOf="@id/etActivity" />
 
     <EditText
-        android:id="@+id/etUid"
+        android:id="@+id/etFrom"
         style="@style/RuleEditText"
-        android:hint="@string/uid"
-        app:layout_constraintEnd_toStartOf="@id/tbUid"
+        android:hint="@string/from"
+        app:layout_constraintEnd_toStartOf="@id/tbFrom"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/etActivity" />
 
@@ -86,7 +86,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@android:drawable/ic_menu_delete"
-        app:layout_constraintBottom_toBottomOf="@id/etUid"
+        app:layout_constraintBottom_toBottomOf="@id/etFrom"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/etUid" />
+        app:layout_constraintTop_toTopOf="@id/etFrom" />
 </androidx.constraintlayout.widget.ConstraintLayout>
