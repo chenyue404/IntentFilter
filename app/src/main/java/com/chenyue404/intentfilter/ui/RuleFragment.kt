@@ -1,8 +1,8 @@
 package com.chenyue404.intentfilter.ui
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Html
 import android.view.LayoutInflater
@@ -26,6 +26,7 @@ class RuleFragment : Fragment() {
 
     private val dataList = arrayListOf<RuleEntity>()
     private lateinit var listAdapter: RuleListAdapter
+    private val sp: SharedPreferences? by lazy { (requireActivity() as MainActivity).getSP() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -77,15 +78,12 @@ class RuleFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            if (dataList.isEmpty()) {
-                getSP()?.edit(true) {
-                    putString(App.KEY_NAME, App.EMPTY_STR)
-                }
-            } else {
-                val str = Gson().toJson(dataList)
-                getSP()?.edit(true) {
-                    putString(App.KEY_NAME, str)
-                }
+            sp?.edit(true) {
+                putString(
+                    App.KEY_NAME,
+                    if (dataList.isEmpty()) App.EMPTY_STR
+                    else Gson().toJson(dataList)
+                )
             }
             startActivity(Intent(requireContext(), EmptyActivity::class.java))
             Toast.makeText(requireContext(), getString(R.string.saved), Toast.LENGTH_SHORT)
@@ -101,15 +99,14 @@ class RuleFragment : Fragment() {
     }
 
     private fun readPerf() {
-        val str = getSP()?.getString(App.KEY_NAME, App.EMPTY_STR)
-            ?: return
+        val str = sp?.getString(App.KEY_NAME, App.EMPTY_STR) ?: return
         if (str == App.EMPTY_STR) return
 
         val list = fromJson<ArrayList<RuleEntity>>(str)
 
         dataList.apply {
             clear()
-            if (!list.isNullOrEmpty()) {
+            if (!list.isEmpty()) {
                 addAll(list)
             }
         }
@@ -206,18 +203,8 @@ class RuleFragment : Fragment() {
         override fun getItemCount() = dataList.size
     }
 
-    private fun getSP() = try {
-        requireContext().getSharedPreferences(
-            App.PREF_NAME,
-            Context.MODE_WORLD_READABLE
-        )
-    } catch (e: SecurityException) {
-        // The new XSharedPreferences is not enabled or module's not loading
-        null // other fallback, if any
-    }
-
     private fun writeEmptyStr() {
-        getSP()?.let {
+        sp?.let {
             if (it.getString(App.KEY_NAME, "").toString().isEmpty()) {
                 it.edit(true) {
                     putString(App.KEY_NAME, App.EMPTY_STR)

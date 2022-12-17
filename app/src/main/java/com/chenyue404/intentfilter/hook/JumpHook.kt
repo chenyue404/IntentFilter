@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.ResolveInfo
 import android.os.Build
 import android.os.Handler
-import android.text.TextUtils
 import com.chenyue404.intentfilter.App
 import com.chenyue404.intentfilter.BuildConfig
 import com.chenyue404.intentfilter.LogReceiver
@@ -25,6 +24,7 @@ class JumpHook : IXposedHookLoadPackage {
     companion object {
         var ruleStr = ""
         var showLog = false
+        var sendBroadcast = false
     }
 
     private val sp by lazy {
@@ -170,7 +170,7 @@ class JumpHook : IXposedHookLoadPackage {
                         param.thisObject,
                         "getPackagesForUid",
                         it
-                    ) as Array<String>
+                    ) as Array<String>?
                 }?.joinToString(App.SPLIT_LETTER) ?: ""
                 val contextField = XposedHelpers.findFieldIfExists(
                     param.thisObject.javaClass,
@@ -181,14 +181,15 @@ class JumpHook : IXposedHookLoadPackage {
 
 //                val mContext = AndroidAppHelper.currentApplication().applicationContext
 
-                sp.reload()
-                showLog = sp.getBoolean(App.KEY_SHOW_LOG_NAME, false)
-
                 if (ruleStr.isEmpty()
-                    || (!TextUtils.isEmpty(intentCompPackage) && intentCompPackage == BuildConfig.APPLICATION_ID)
+                    || intentCompPackage == BuildConfig.APPLICATION_ID
                 ) {
-//                    log("ruleStr读取之前=$ruleStr")
+                    sp.reload()
+                    log("before: ruleStr=$ruleStr, showLog=$showLog, sendBroadcast=$sendBroadcast")
                     ruleStr = sp.getString(App.KEY_NAME, "").toString()
+                    showLog = sp.getBoolean(App.KEY_SHOW_LOG_NAME, false)
+                    sendBroadcast = sp.getBoolean(App.KEY_SEND_BROADCAST, false)
+                    log("after: ruleStr=$ruleStr, showLog=$showLog, sendBroadcast=$sendBroadcast")
                 } else {
 //                    log("ruleStr有值=$ruleStr")
                 }
@@ -268,7 +269,8 @@ class JumpHook : IXposedHookLoadPackage {
                             "blocked=$indexList"
                 )
 
-                if (list.isNotEmpty()
+                if (sendBroadcast
+                    && list.isNotEmpty()
                     && (intentAction.isNotEmpty() || dataString.isNotEmpty())
                     && (intentAction.isEmpty() || intentAction != Intent.ACTION_MAIN)
                 ) {

@@ -36,12 +36,25 @@
         tools:listitem="@layout/item_log" />
 
     <ImageButton
-        android:id="@+id/btClear"
-        android:layout_width="match_parent"
+        android:id="@+id/btStatus"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:src="@android:drawable/ic_media_pause"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btClear"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageButton
+        android:id="@+id/btClear"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:contentDescription="@string/clearLog"
         android:src="@android:drawable/ic_menu_delete"
         android:tooltipText="@string/clearLog"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btStatus" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

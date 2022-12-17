@@ -109,13 +109,13 @@ class MainActivity : AppCompatActivity() {
             .setTitle(R.string.show_log_title)
             .setSingleChoiceItems(
                 arrayOf("YES", "NO"),
-                1
+                if (showLog) 0 else 1
             ) { dialog, which ->
                 showLog = which == 0
             }
             .setPositiveButton(R.string.save) { dialog, which ->
-                getSP()?.edit {
-                    putBoolean(App.KEY_SHOW_LOG_NAME, showLog)
+                getSP()?.edit(true) {
+                    putBoolean(App.KEY_SHOW_LOG_NAME, which == 0)
                 }
                 startActivity(Intent(this, EmptyActivity::class.java))
             }
@@ -123,7 +123,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun getSP() = try {
+    fun getSP() = try {
         getSharedPreferences(
             App.PREF_NAME,
             Context.MODE_WORLD_READABLE

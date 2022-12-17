@@ -12,6 +12,7 @@ class App : Application() {
         val KEY_NAME = "main_prefs_key"
         val EMPTY_STR = "EMPTY_STR"
         val KEY_SHOW_LOG_NAME = "key_show_log_name"
+        val KEY_SEND_BROADCAST = "key_send_broadcast"
     }
 
     override fun attachBaseContext(base: Context) {

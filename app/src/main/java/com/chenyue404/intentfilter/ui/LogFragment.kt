@@ -1,6 +1,8 @@
 package com.chenyue404.intentfilter.ui
 
+import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.chenyue404.intentfilter.*
@@ -18,10 +21,13 @@ class LogFragment : Fragment() {
 
     private val rvList: RecyclerView by lazy { requireView().findViewById(R.id.rvList) }
     private val btClear: ImageButton by lazy { requireView().findViewById(R.id.btClear) }
+    private val btStatus: ImageButton by lazy { requireView().findViewById(R.id.btStatus) }
 
     private lateinit var logReceiver: LogReceiver
     private val dataList = arrayListOf<LogEntity>()
     private val listAdapter = LogListAdapter(dataList)
+
+    private val sp: SharedPreferences? by lazy { (requireActivity() as MainActivity).getSP() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,6 +49,23 @@ class LogFragment : Fragment() {
             adapter = listAdapter
         }
 
+        var sendBroadcast = sp?.getBoolean(App.KEY_SEND_BROADCAST, false) ?: false
+        btStatus.setImageResource(
+            if (sendBroadcast) android.R.drawable.ic_media_pause
+            else android.R.drawable.ic_media_play
+        )
+        btStatus.setOnClickListener {
+            sendBroadcast = !sendBroadcast
+            btStatus.setImageResource(
+                if (sendBroadcast) android.R.drawable.ic_media_pause
+                else android.R.drawable.ic_media_play
+            )
+            sp?.edit(true) {
+                putBoolean(App.KEY_SEND_BROADCAST, sendBroadcast)
+            }
+            startActivity(Intent(requireContext(), EmptyActivity::class.java))
+        }
+
         btClear.setOnClickListener {
             dataList.clear()
             listAdapter.notifyDataSetChanged()
@@ -50,7 +73,7 @@ class LogFragment : Fragment() {
 
         logReceiver = LogReceiver {
             dataList.add(it)
-            listAdapter.notifyItemChanged(dataList.lastIndex)
+            listAdapter.notifyItemInserted(dataList.lastIndex)
             if (!rvList.canScrollVertically(1)) {
                 rvList.scrollToPosition(dataList.lastIndex)
             }
