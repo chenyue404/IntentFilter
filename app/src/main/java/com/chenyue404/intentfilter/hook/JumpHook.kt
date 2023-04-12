@@ -88,7 +88,7 @@ class JumpHook : IXposedHookLoadPackage {
                     callBackHook
                 )
             }
-            else -> {
+            version <= Build.VERSION_CODES.S_V2 -> {
                 XposedHelpers.findAndHookMethod(
                     "com.android.server.pm.PackageManagerService.ComputerTracker",
                     classLoader,
@@ -111,6 +111,22 @@ class JumpHook : IXposedHookLoadPackage {
                     String::class.java,
                     Int::class.java,
                     Int::class.java,
+                    callBackHook
+                )
+            }
+            else -> {
+                XposedHelpers.findAndHookMethod(
+                    "com.android.server.pm.ComputerEngine",
+                    classLoader,
+                    "queryIntentActivitiesInternal",
+                    Intent::class.java,
+                    String::class.java,
+                    Long::class.java,//@PackageManager.ResolveInfoFlagsBits long flags
+                    Long::class.java,//@PackageManagerInternal.PrivateResolveFlags long privateResolveFlags
+                    Int::class.java,//filterCallingUid
+                    Int::class.java,//userId
+                    Boolean::class.java,//resolveForStart
+                    Boolean::class.java,//allowDynamicSplits
                     callBackHook
                 )
             }
