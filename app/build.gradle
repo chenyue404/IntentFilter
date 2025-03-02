@@ -4,14 +4,14 @@ plugins {
 }
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 35
 
     defaultConfig {
         applicationId "com.chenyue404.intentfilter"
         minSdkVersion 24
         targetSdkVersion 33
-        versionCode 5
-        versionName "1.4"
+        versionCode 6
+        versionName "1.5"
     }
 
     File certificationConfFile = file("certification.properties")
@@ -40,8 +40,8 @@ android {
         }
     }
 
-    applicationVariants.all { variant ->
-        variant.outputs.all { output ->
+    applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
             if (variant.buildType.name == 'release') {
                 def fileName = "IntentFitler_${defaultConfig.versionCode}_${defaultConfig.versionName}.apk"
                 outputFileName = fileName

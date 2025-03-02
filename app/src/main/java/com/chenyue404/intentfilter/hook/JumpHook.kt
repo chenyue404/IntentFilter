@@ -13,7 +13,11 @@ import com.chenyue404.intentfilter.entity.LogEntity
 import com.chenyue404.intentfilter.entity.RuleEntity
 import com.chenyue404.intentfilter.fromJson
 import com.google.gson.Gson
-import de.robv.android.xposed.*
+import de.robv.android.xposed.IXposedHookLoadPackage
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XSharedPreferences
+import de.robv.android.xposed.XposedBridge
+import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class JumpHook : IXposedHookLoadPackage {
@@ -59,6 +63,7 @@ class JumpHook : IXposedHookLoadPackage {
                     callBackHook
                 )
             }
+
             version == Build.VERSION_CODES.O -> {
                 XposedHelpers.findAndHookMethod(
                     "com.android.server.pm.PackageManagerService",
@@ -73,6 +78,7 @@ class JumpHook : IXposedHookLoadPackage {
                     callBackHook
                 )
             }
+
             version <= Build.VERSION_CODES.Q -> {
                 XposedHelpers.findAndHookMethod(
                     "com.android.server.pm.PackageManagerService",
@@ -88,6 +94,7 @@ class JumpHook : IXposedHookLoadPackage {
                     callBackHook
                 )
             }
+
             version <= Build.VERSION_CODES.S_V2 -> {
                 XposedHelpers.findAndHookMethod(
                     "com.android.server.pm.PackageManagerService.ComputerTracker",
@@ -114,6 +121,24 @@ class JumpHook : IXposedHookLoadPackage {
                     callBackHook
                 )
             }
+
+            version <= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
+                XposedHelpers.findAndHookMethod(
+                    "com.android.server.pm.ComputerEngine",
+                    classLoader,
+                    "queryIntentActivitiesInternal",
+                    Intent::class.java,
+                    String::class.java,
+                    Long::class.java,//@PackageManager.ResolveInfoFlagsBits long flags
+                    Long::class.java,//@PackageManagerInternal.PrivateResolveFlags long privateResolveFlags
+                    Int::class.java,//filterCallingUid
+                    Int::class.java,//userId
+                    Boolean::class.java,//resolveForStart
+                    Boolean::class.java,//allowDynamicSplits
+                    callBackHook
+                )
+            }
+
             else -> {
                 XposedHelpers.findAndHookMethod(
                     "com.android.server.pm.ComputerEngine",
@@ -124,6 +149,7 @@ class JumpHook : IXposedHookLoadPackage {
                     Long::class.java,//@PackageManager.ResolveInfoFlagsBits long flags
                     Long::class.java,//@PackageManagerInternal.PrivateResolveFlags long privateResolveFlags
                     Int::class.java,//filterCallingUid
+                    Int::class.java,//callingPid
                     Int::class.java,//userId
                     Boolean::class.java,//resolveForStart
                     Boolean::class.java,//allowDynamicSplits
