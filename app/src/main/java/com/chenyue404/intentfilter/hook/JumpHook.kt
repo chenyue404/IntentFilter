@@ -165,8 +165,11 @@ class JumpHook : IXposedHookLoadPackage {
     private fun hookCheckBroadcastFromSystem(classLoader: ClassLoader) {
         val ProcessRecord =
             XposedHelpers.findClass("com.android.server.am.ProcessRecord", classLoader)
+        val hookClassStr =
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) "com.android.server.am.BroadcastController"
+            else "com.android.server.am.ActivityManagerService"
         XposedHelpers.findAndHookMethod(
-            "com.android.server.am.ActivityManagerService", classLoader,
+            hookClassStr, classLoader,
             "checkBroadcastFromSystem",
             Intent::class.java,
             ProcessRecord,
