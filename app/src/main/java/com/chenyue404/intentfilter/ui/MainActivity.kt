@@ -1,20 +1,21 @@
 package com.chenyue404.intentfilter.ui
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.chenyue404.intentfilter.App
 import com.chenyue404.intentfilter.R
+import com.chenyue404.intentfilter.hook.JumpHook
 
 class MainActivity : AppCompatActivity() {
     private val vpContent: ViewPager by lazy { findViewById(R.id.vpContent) }
@@ -90,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                         startActivity(
                             Intent(
                                 Intent.ACTION_VIEW,
-                                Uri.parse(address)
+                                address.toUri()
                             )
                         )
                     }
@@ -98,6 +99,7 @@ class MainActivity : AppCompatActivity() {
                     .show()
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -113,9 +115,9 @@ class MainActivity : AppCompatActivity() {
             ) { dialog, which ->
                 showLog = which == 0
             }
-            .setPositiveButton(R.string.save) { dialog, which ->
+            .setPositiveButton(R.string.save) { _, _ ->
                 getSP()?.edit(true) {
-                    putBoolean(App.KEY_SHOW_LOG_NAME, which == 0)
+                    putBoolean(App.KEY_SHOW_LOG_NAME, showLog)
                 }
                 startActivity(Intent(this, EmptyActivity::class.java))
             }
@@ -126,10 +128,11 @@ class MainActivity : AppCompatActivity() {
     fun getSP() = try {
         getSharedPreferences(
             App.PREF_NAME,
-            Context.MODE_WORLD_READABLE
+            MODE_WORLD_READABLE
         )
     } catch (e: SecurityException) {
         // The new XSharedPreferences is not enabled or module's not loading
+        Log.e(JumpHook.TAG, "getSP failed: $e")
         null // other fallback, if any
     }
 }
