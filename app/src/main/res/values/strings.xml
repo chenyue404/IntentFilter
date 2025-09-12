@@ -25,5 +25,6 @@
     <string name="add">Add</string>
     <string name="black">Is</string>
     <string name="white">Not</string>
-    <string name="show_log_title" translatable="false">Show the log of the app working</string>
+    <string name="show_log_title">Show the log of the app working</string>
+    <string name="toggle_show_log">Toggle show log</string>
 </resources>

@@ -16,6 +16,7 @@
         android:gravity="center"
         android:padding="50dp"
         android:text="@string/tip_rule"
+        android:textIsSelectable="true"
         app:layout_constraintBottom_toTopOf="@id/btSave"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

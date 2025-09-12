@@ -16,6 +16,7 @@
         android:gravity="center"
         android:padding="50dp"
         android:text="@string/tip_log"
+        android:textIsSelectable="true"
         app:layout_constraintBottom_toTopOf="@id/btClear"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -40,7 +41,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:contentDescription="@string/toggle_show_log"
         android:src="@android:drawable/ic_media_pause"
+        android:tooltipText="@string/toggle_show_log"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/btClear"
         app:layout_constraintStart_toStartOf="parent" />

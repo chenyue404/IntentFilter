@@ -40,7 +40,7 @@ class RuleFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ) = inflater.inflate(R.layout.fragment_rule, container, false)
+    ): View? = inflater.inflate(R.layout.fragment_rule, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -89,7 +89,7 @@ class RuleFragment : Fragment() {
             sp?.edit(true) {
                 putString(
                     App.KEY_NAME,
-                    if (dataList.isEmpty()) App.EMPTY_STR
+                    if (dataList.isEmpty()) ""
                     else Gson().toJson(dataList)
                 )
             }
@@ -107,15 +107,19 @@ class RuleFragment : Fragment() {
     }
 
     private fun readPerf() {
-        val str = sp?.getString(App.KEY_NAME, App.EMPTY_STR) ?: return
-        if (str == App.EMPTY_STR) return
+        val str = sp?.getString(App.KEY_NAME, "") ?: ""
+        if (str.isEmpty()) return
 
-        val type = TypeToken.getParameterized(ArrayList::class.java, RuleEntity::class.java).type
-        val list: ArrayList<RuleEntity> = Gson().fromJson(str, type)
+        val type = TypeToken.getParameterized(MutableList::class.java, RuleEntity::class.java).type
+        val list: MutableList<RuleEntity>? = try {
+            Gson().fromJson(str, type)
+        } catch (e: Exception) {
+            null
+        }
 
         dataList.apply {
             clear()
-            if (!list.isEmpty()) {
+            if (!list.isNullOrEmpty()) {
                 addAll(list)
             }
         }
@@ -216,7 +220,7 @@ class RuleFragment : Fragment() {
         sp?.let {
             if (it.getString(App.KEY_NAME, "").toString().isEmpty()) {
                 it.edit(true) {
-                    putString(App.KEY_NAME, App.EMPTY_STR)
+                    putString(App.KEY_NAME, "")
                 }
             }
         }

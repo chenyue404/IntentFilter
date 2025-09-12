@@ -20,4 +20,6 @@
     <string name="add">添加</string>
     <string name="black">是</string>
     <string name="white">非</string>
+    <string name="show_log_title">打印日志</string>
+    <string name="toggle_show_log">切换显示记录</string>
 </resources>
