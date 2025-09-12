@@ -8,12 +8,14 @@ import com.google.gson.Gson
 
 class LogReceiver(val block: (LogEntity) -> Unit) : BroadcastReceiver() {
     companion object {
-        val ACTION = BuildConfig.APPLICATION_ID + "LOG_INTENT"
-        val EXTRA_KEY = "extra_key"
+        const val ACTION = BuildConfig.APPLICATION_ID + "LOG_INTENT"
+        const val EXTRA_KEY = "extra_key"
     }
 
+    private val gson = Gson()
+
     override fun onReceive(context: Context, intent: Intent) {
-        val logEntity = Gson().fromJson(intent.getStringExtra(EXTRA_KEY), LogEntity::class.java)
+        val logEntity = gson.fromJson(intent.getStringExtra(EXTRA_KEY), LogEntity::class.java)
         block(logEntity)
     }
 }

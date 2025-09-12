@@ -9,14 +9,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.TextView
+import android.widget.Toast
+import android.widget.ToggleButton
 import androidx.core.content.edit
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
-import com.chenyue404.intentfilter.*
+import com.chenyue404.intentfilter.App
+import com.chenyue404.intentfilter.R
+import com.chenyue404.intentfilter.dp2Px
 import com.chenyue404.intentfilter.entity.RuleEntity
+import com.chenyue404.intentfilter.visible
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 class RuleFragment : Fragment() {
     private lateinit var rvList: RecyclerView
@@ -102,7 +110,8 @@ class RuleFragment : Fragment() {
         val str = sp?.getString(App.KEY_NAME, App.EMPTY_STR) ?: return
         if (str == App.EMPTY_STR) return
 
-        val list = fromJson<ArrayList<RuleEntity>>(str)
+        val type = TypeToken.getParameterized(ArrayList::class.java, RuleEntity::class.java).type
+        val list: ArrayList<RuleEntity> = Gson().fromJson(str, type)
 
         dataList.apply {
             clear()

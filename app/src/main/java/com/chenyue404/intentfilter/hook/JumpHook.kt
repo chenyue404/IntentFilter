@@ -1,6 +1,7 @@
 package com.chenyue404.intentfilter.hook
 
 import android.app.AndroidAppHelper
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
@@ -11,8 +12,9 @@ import com.chenyue404.intentfilter.BuildConfig
 import com.chenyue404.intentfilter.LogReceiver
 import com.chenyue404.intentfilter.entity.LogEntity
 import com.chenyue404.intentfilter.entity.RuleEntity
-import com.chenyue404.intentfilter.fromJson
+import com.chenyue404.intentfilter.ui.EmptyActivity
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XSharedPreferences
@@ -23,9 +25,9 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 class JumpHook : IXposedHookLoadPackage {
 
     private val PACKAGE_NAME = "android"
-    private val TAG = "intentfilter--hook-"
 
     companion object {
+        const val TAG = "intentfilter--hook-"
         var ruleStr = ""
         var showLog = false
         var sendBroadcast = false
@@ -195,6 +197,11 @@ class JumpHook : IXposedHookLoadPackage {
             3
         }
 
+    private val gson by lazy { Gson() }
+    private val typeRuleEntityArrayList by lazy {
+        TypeToken.getParameterized(ArrayList::class.java, RuleEntity::class.java).type
+    }
+
     private val callBackHook by lazy {
         object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
@@ -224,27 +231,27 @@ class JumpHook : IXposedHookLoadPackage {
                 val mContext = contextField?.get(param.thisObject) as Context?
                     ?: AndroidAppHelper.currentApplication().applicationContext
 
-//                val mContext = AndroidAppHelper.currentApplication().applicationContext
-
-                if (ruleStr.isEmpty()
-                    || intentCompPackage == BuildConfig.APPLICATION_ID
+                if (intent.component == ComponentName(
+                        BuildConfig.APPLICATION_ID,
+                        EmptyActivity::class.java.name
+                    )
                 ) {
                     sp.reload()
-                    log("before: ruleStr=$ruleStr, showLog=$showLog, sendBroadcast=$sendBroadcast")
+                    log { "before: ruleStr=$ruleStr, showLog=$showLog, sendBroadcast=$sendBroadcast" }
                     ruleStr = sp.getString(App.KEY_NAME, "").toString()
                     showLog = sp.getBoolean(App.KEY_SHOW_LOG_NAME, false)
                     sendBroadcast = sp.getBoolean(App.KEY_SEND_BROADCAST, false)
-                    log("after: ruleStr=$ruleStr, showLog=$showLog, sendBroadcast=$sendBroadcast")
-                } else {
-//                    log("ruleStr有值=$ruleStr")
+                    log { "after: ruleStr=$ruleStr, showLog=$showLog, sendBroadcast=$sendBroadcast" }
                 }
                 if (ruleStr.contains("\"a\":")) {
                     ruleStr = App.EMPTY_STR
-                    log("清除")
+                    log { "清除" }
                 }
                 val ruleList = arrayListOf<RuleEntity>()
                 if (ruleStr.isNotEmpty() && ruleStr != App.EMPTY_STR) {
-                    ruleList.addAll(fromJson<ArrayList<RuleEntity>>(ruleStr))
+                    val list: ArrayList<RuleEntity> =
+                        gson.fromJson(ruleStr, typeRuleEntityArrayList)
+                    ruleList.addAll(list)
                 }
                 val ruleIsEmpty =
                     ruleStr.isEmpty() || ruleStr == App.EMPTY_STR || ruleList.isEmpty()
@@ -307,12 +314,12 @@ class JumpHook : IXposedHookLoadPackage {
                     }
                 }
 
-                log(
+                log {
                     "intent=$intent\n" +
                             "from=$callingPkg\n" +
                             "activity=$activityList\n" +
                             "blocked=$indexList"
-                )
+                }
 
                 if (sendBroadcast
                     && list.isNotEmpty()
@@ -323,7 +330,7 @@ class JumpHook : IXposedHookLoadPackage {
                         mContext.sendBroadcast(
                             Intent().setAction(LogReceiver.ACTION)
                                 .putExtra(
-                                    LogReceiver.EXTRA_KEY, Gson().toJson(
+                                    LogReceiver.EXTRA_KEY, gson.toJson(
                                         LogEntity(
                                             time = System.currentTimeMillis(),
                                             from = callingPkg,
@@ -342,8 +349,8 @@ class JumpHook : IXposedHookLoadPackage {
         }
     }
 
-    private fun log(str: String) {
+    private fun log(str: () -> String) {
         if (!BuildConfig.DEBUG && !showLog) return
-        XposedBridge.log("$TAG-$str")
+        XposedBridge.log("$TAG-${str()}")
     }
 }

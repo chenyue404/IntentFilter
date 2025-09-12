@@ -13,8 +13,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
-import com.chenyue404.intentfilter.*
+import com.chenyue404.intentfilter.App
+import com.chenyue404.intentfilter.LogReceiver
+import com.chenyue404.intentfilter.R
+import com.chenyue404.intentfilter.SpanUtils
+import com.chenyue404.intentfilter.dp2Px
 import com.chenyue404.intentfilter.entity.LogEntity
+import com.chenyue404.intentfilter.timeToStr
 
 class LogFragment : Fragment() {
     private val TAG = "intentfilter-hook-"
@@ -50,16 +55,10 @@ class LogFragment : Fragment() {
         }
 
         var sendBroadcast = sp?.getBoolean(App.KEY_SEND_BROADCAST, false) ?: false
-        btStatus.setImageResource(
-            if (sendBroadcast) android.R.drawable.ic_media_pause
-            else android.R.drawable.ic_media_play
-        )
+        updateBtStatus(sendBroadcast)
         btStatus.setOnClickListener {
             sendBroadcast = !sendBroadcast
-            btStatus.setImageResource(
-                if (sendBroadcast) android.R.drawable.ic_media_pause
-                else android.R.drawable.ic_media_play
-            )
+            updateBtStatus(sendBroadcast)
             sp?.edit(true) {
                 putBoolean(App.KEY_SEND_BROADCAST, sendBroadcast)
             }
@@ -81,6 +80,13 @@ class LogFragment : Fragment() {
         requireActivity().registerReceiver(logReceiver, IntentFilter().apply {
             addAction(LogReceiver.ACTION)
         })
+    }
+
+    private fun updateBtStatus(sendBroadcast: Boolean) {
+        btStatus.setImageResource(
+            if (sendBroadcast) android.R.drawable.ic_media_pause
+            else android.R.drawable.ic_media_play
+        )
     }
 
     override fun onDestroy() {

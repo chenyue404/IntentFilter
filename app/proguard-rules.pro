@@ -20,7 +20,7 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep class com.chenyue404.intentfilter.PluginEntry
+-keep class com.chenyue404.intentfilter.hook.JumpHook
 
 
 ##---------------Begin: proguard configuration for Gson  ----------

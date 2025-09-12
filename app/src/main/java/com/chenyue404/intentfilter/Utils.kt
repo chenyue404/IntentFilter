@@ -3,12 +3,10 @@ package com.chenyue404.intentfilter
 import android.content.Context
 import android.content.Intent
 import android.view.View
-import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import com.google.gson.reflect.TypeToken
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 
 class Utils {
 }
@@ -18,10 +16,6 @@ fun Long.timeToStr(): String =
 
 fun Int.dp2Px(context: Context): Int {
     return (this * context.resources.displayMetrics.density + 0.5f).toInt()
-}
-
-inline fun <reified T> fromJson(json: String?): T {
-    return Gson().fromJson(json, object : TypeToken<T>() {}.type)
 }
 
 fun getResourceIdByName(context: Context, name: String): Int {
