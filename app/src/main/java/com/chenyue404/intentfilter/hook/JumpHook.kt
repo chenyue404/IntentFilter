@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
 import android.os.Build
-import android.os.Handler
 import com.chenyue404.intentfilter.App
 import com.chenyue404.intentfilter.BuildConfig
 import com.chenyue404.intentfilter.LogReceiver
@@ -198,12 +197,14 @@ class JumpHook : IXposedHookLoadPackage {
             3
         }
 
-    private fun readSp() {
+    private fun readSp(readSendBroadcast: Boolean = false) {
         sp.reload()
         log { "before: ruleStr=$ruleStr, showLog=$showLog, sendBroadcast=$sendBroadcast" }
         ruleStr = sp.getString(App.KEY_NAME, "") ?: ""
         showLog = sp.getBoolean(App.KEY_SHOW_LOG_NAME, false)
-        sendBroadcast = sp.getBoolean(App.KEY_SEND_BROADCAST, false)
+        if (readSendBroadcast) {
+            sendBroadcast = sp.getBoolean(App.KEY_SEND_BROADCAST, false)
+        }
         log { "after: ruleStr=$ruleStr, showLog=$showLog, sendBroadcast=$sendBroadcast" }
         ruleList.clear()
         if (ruleStr.isNotEmpty()) {
@@ -254,18 +255,14 @@ class JumpHook : IXposedHookLoadPackage {
                 val mContext = contextField?.get(param.thisObject) as Context?
                     ?: AndroidAppHelper.currentApplication().applicationContext
 
-                if (intent.component == ComponentName(
+                if ((callingPkg == BuildConfig.APPLICATION_ID
+                            && intent.component == ComponentName(
                         BuildConfig.APPLICATION_ID,
                         EmptyActivity::class.java.name
-                    )
+                    ))
+                    || (intentAction == Intent.ACTION_MAIN && intentCompPackage == BuildConfig.APPLICATION_ID)
                 ) {
-                    readSp()
-                }
-
-                val activityList = list.map {
-                    val activityInfo = it.activityInfo
-                    val activityName = "${activityInfo.packageName}/${activityInfo.name}"
-                    activityName
+                    readSp(true)
                 }
 
                 val indexList = hashSetOf<Int>()
@@ -315,19 +312,26 @@ class JumpHook : IXposedHookLoadPackage {
                     param.result = mutableList
                 }
 
-                log {
-                    "intent=$intent\n" +
-                            "from=$callingPkg\n" +
-                            "activity=$activityList\n" +
-                            "blocked=$indexList"
+                if (!BuildConfig.DEBUG && !showLog && !sendBroadcast) {
+                    return
                 }
-
-                if (sendBroadcast
-                    && list.isNotEmpty()
-                    && (intentAction.isNotEmpty() || dataString.isNotEmpty())
-                    && (intentAction.isEmpty() || intentAction != Intent.ACTION_MAIN)
-                ) {
-                    Handler(mContext.mainLooper).post {
+                Thread {
+                    val activityList = list.map {
+                        val activityInfo = it.activityInfo
+                        val activityName = "${activityInfo.packageName}/${activityInfo.name}"
+                        activityName
+                    }
+                    log {
+                        "intent=$intent\n" +
+                                "from=$callingPkg\n" +
+                                "activity=$activityList\n" +
+                                "blocked=$indexList"
+                    }
+                    if (sendBroadcast
+                        && list.isNotEmpty()
+                        && (intentAction.isNotEmpty() || dataString.isNotEmpty())
+                        && (intentAction.isEmpty() || intentAction != Intent.ACTION_MAIN)
+                    ) {
                         mContext.sendBroadcast(
                             Intent().setAction(LogReceiver.ACTION)
                                 .putExtra(
@@ -339,13 +343,13 @@ class JumpHook : IXposedHookLoadPackage {
                                             type = intentType,
                                             dataString = dataString,
                                             activities = activityList.joinToString(separator = App.SPLIT_LETTER),
-                                            blockIndexes = indexList.joinToString(separator = App.SPLIT_LETTER)
+                                            blockIndexes = indexList.joinToString(separator = App.SPLIT_LETTER),
                                         )
                                     )
                                 )
                         )
                     }
-                }
+                }.start()
             }
         }
     }
