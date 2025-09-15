@@ -10,8 +10,8 @@ android {
         applicationId "com.chenyue404.intentfilter"
         minSdkVersion 24
         targetSdkVersion 33
-        versionCode 7
-        versionName "1.6"
+        versionCode 8
+        versionName "1.7"
     }
 
     File certificationConfFile = file("certification.properties")
