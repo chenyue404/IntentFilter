@@ -109,16 +109,18 @@ class LogFragment : Fragment() {
             notifyItemRangeRemoved(0, size)
         }
 
-        private fun toggleFold(holder: ViewHolder, position: Int) {
+        private fun updateFold(holder: ViewHolder, position: Int, fromClick: Boolean = false) {
             val logEntity = dataList[position]
             val fromList = logEntity.from.split(App.SPLIT_LETTER)
             val activityList = logEntity.activities.split(App.SPLIT_LETTER)
             val indexList = logEntity.blockIndexes.split(App.SPLIT_LETTER)
-            val unfold = unfoldIndexList.contains(position)
-            with(unfoldIndexList) {
-                if (contains(position)) remove(position)
-                else add(position)
+            if (fromClick) {
+                with(unfoldIndexList) {
+                    if (contains(position)) remove(position)
+                    else add(position)
+                }
             }
+            val unfold = unfoldIndexList.contains(position)
             with(holder) {
                 btMore.rotation = if (unfold) 180f else 0f
                 if (!unfold && fromList.size > 1) {
@@ -180,7 +182,7 @@ class LogFragment : Fragment() {
             val unfold = unfoldIndexList.contains(position)
             with(holder) {
                 btMore.setOnClickListener {
-                    toggleFold(holder, position)
+                    updateFold(holder, position, true)
                 }
                 btMore.isVisible = fromList.size > 1
                 tvTime.text = logEntity.time.timeToStr()
@@ -200,7 +202,7 @@ class LogFragment : Fragment() {
                     }
                 }
             }
-            toggleFold(holder, position)
+            updateFold(holder, position)
         }
 
         override fun getItemCount() = dataList.size
