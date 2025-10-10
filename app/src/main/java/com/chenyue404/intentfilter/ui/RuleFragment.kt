@@ -15,7 +15,6 @@ import android.widget.TextView
 import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.core.content.edit
-import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.chenyue404.intentfilter.App
@@ -32,9 +31,8 @@ class RuleFragment : Fragment() {
     private lateinit var btAdd: ImageButton
     private lateinit var tvTip: TextView
 
-    private val dataList = arrayListOf<RuleEntity>()
-    private lateinit var listAdapter: RuleListAdapter
     private val sp: SharedPreferences? by lazy { (requireActivity() as MainActivity).getSP() }
+    private val listAdapter by lazy { RuleListAdapter() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,17 +46,12 @@ class RuleFragment : Fragment() {
             rvList = findViewById(R.id.rvList)
             btSave = findViewById(R.id.btSave)
             btAdd = findViewById(R.id.btAdd)
-            btAdd = findViewById(R.id.btAdd)
             tvTip = findViewById(R.id.tvTip)
         }
         tvTip.text = Html.fromHtml(
             getString(R.string.tip_rule, App.SPLIT_LETTER),
             Html.FROM_HTML_MODE_LEGACY
         )
-        listAdapter = RuleListAdapter(dataList) {
-            dataList.removeAt(it)
-            listAdapter.notifyItemRemoved(it)
-        }
         rvList.apply {
             addItemDecoration(
                 SpaceItemDecoration(
@@ -73,7 +66,7 @@ class RuleFragment : Fragment() {
         btSave.setOnClickListener {
             hideKeyboard()
             val haveEmptyEntity =
-                dataList.any {
+                listAdapter.dataList.any {
                     it.actionKeywords.isEmpty()
                             && it.typeKeywords.isEmpty()
                             && it.dataStringKeywords.isEmpty()
@@ -89,8 +82,8 @@ class RuleFragment : Fragment() {
             sp?.edit(true) {
                 putString(
                     App.KEY_NAME,
-                    if (dataList.isEmpty()) ""
-                    else Gson().toJson(dataList)
+                    if (listAdapter.dataList.isEmpty()) ""
+                    else Gson().toJson(listAdapter.dataList)
                 )
             }
             startActivity(Intent(requireContext(), EmptyActivity::class.java))
@@ -98,9 +91,8 @@ class RuleFragment : Fragment() {
                 .show()
         }
         btAdd.setOnClickListener {
-            dataList.add(RuleEntity())
-            listAdapter.notifyItemChanged(dataList.size - 1)
-            rvList.scrollToPosition(dataList.size - 1)
+            listAdapter.add(RuleEntity())
+            rvList.scrollToPosition(listAdapter.dataList.size - 1)
         }
         readPerf()
         writeEmptyStr()
@@ -117,20 +109,30 @@ class RuleFragment : Fragment() {
             null
         }
 
-        dataList.apply {
-            clear()
-            if (!list.isNullOrEmpty()) {
-                addAll(list)
-            }
-        }
-        listAdapter.notifyDataSetChanged()
+        listAdapter.setList(list ?: listOf())
     }
 
-    private class RuleListAdapter(
-        val dataList: ArrayList<RuleEntity>,
-        val deleteFun: (Int) -> Unit
-    ) :
-        RecyclerView.Adapter<RuleListAdapter.ViewHolder>() {
+    private class RuleListAdapter() : RecyclerView.Adapter<RuleListAdapter.ViewHolder>() {
+        private val _dataList = mutableListOf<RuleEntity>()
+
+        val dataList: List<RuleEntity>
+            get() = _dataList
+
+        fun setList(list: List<RuleEntity>) {
+            _dataList.clear()
+            _dataList.addAll(list)
+            notifyDataSetChanged()
+        }
+
+        fun delete(index: Int) {
+            _dataList.removeAt(index)
+            notifyItemRemoved(index)
+        }
+
+        fun add(ruleEntity: RuleEntity, index: Int = _dataList.size) {
+            _dataList.add(index, ruleEntity)
+            notifyItemInserted(index)
+        }
 
         private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val etAction: EditText = itemView.findViewById(R.id.etAction)
@@ -144,6 +146,14 @@ class RuleFragment : Fragment() {
             val tbActivity: ToggleButton = itemView.findViewById(R.id.tbActivity)
             val tbFrom: ToggleButton = itemView.findViewById(R.id.tbFrom)
             val ibDelete: ImageButton = itemView.findViewById(R.id.ibDelete)
+
+            val actionTextWatcher = MyTextWatcher { rule, text -> rule.actionKeywords = text }
+            val typeTextWatcher = MyTextWatcher { rule, text -> rule.typeKeywords = text }
+            val dataStringTextWatcher =
+                MyTextWatcher { rule, text -> rule.dataStringKeywords = text }
+            val activityTextWatcher = MyTextWatcher { rule, text -> rule.activityKeywords = text }
+            val fromTextWatcher = MyTextWatcher { rule, text -> rule.from = text }
+
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder = ViewHolder(
@@ -151,7 +161,7 @@ class RuleFragment : Fragment() {
         )
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val ruleEntity = dataList[position]
+            val ruleEntity = _dataList[position]
             with(holder) {
                 etAction.setText(ruleEntity.actionKeywords)
                 etType.setText(ruleEntity.typeKeywords)
@@ -170,25 +180,25 @@ class RuleFragment : Fragment() {
                 tbFrom.isChecked = ruleEntity.fromBlack
                 tbFrom.visible(ruleEntity.from.isNotEmpty())
 
-                etAction.doAfterTextChanged {
-                    ruleEntity.actionKeywords = it.toString()
-                    tbAction.visible(it.toString().isNotEmpty())
+                etAction.apply {
+                    removeTextChangedListener(actionTextWatcher)
+                    addTextChangedListener(actionTextWatcher)
                 }
-                etType.doAfterTextChanged {
-                    ruleEntity.typeKeywords = it.toString()
-                    tbType.visible(it.toString().isNotEmpty())
+                etType.apply {
+                    removeTextChangedListener(typeTextWatcher)
+                    addTextChangedListener(typeTextWatcher)
                 }
-                etDataString.doAfterTextChanged {
-                    ruleEntity.dataStringKeywords = it.toString()
-                    tbDataString.visible(it.toString().isNotEmpty())
+                etDataString.apply {
+                    removeTextChangedListener(dataStringTextWatcher)
+                    addTextChangedListener(dataStringTextWatcher)
                 }
-                etActivity.doAfterTextChanged {
-                    ruleEntity.activityKeywords = it.toString()
-                    tbActivity.visible(it.toString().isNotEmpty())
+                etActivity.apply {
+                    removeTextChangedListener(activityTextWatcher)
+                    addTextChangedListener(activityTextWatcher)
                 }
-                etFrom.doAfterTextChanged {
-                    ruleEntity.from = it.toString()
-                    tbFrom.visible(it.toString().isNotEmpty())
+                etFrom.apply {
+                    removeTextChangedListener(fromTextWatcher)
+                    addTextChangedListener(fromTextWatcher)
                 }
 
                 tbAction.setOnCheckedChangeListener { _, isChecked ->
@@ -207,13 +217,28 @@ class RuleFragment : Fragment() {
                     ruleEntity.fromBlack = isChecked
                 }
                 ibDelete.setOnClickListener {
-                    val index = dataList.indexOf(ruleEntity)
-                    if (index >= 0) deleteFun(index)
+                    delete(bindingAdapterPosition)
                 }
             }
         }
 
-        override fun getItemCount() = dataList.size
+        override fun getItemCount() = _dataList.size
+
+        private class MyTextWatcher(private val onTextChanged: (RuleEntity, String) -> Unit) :
+            android.text.TextWatcher {
+            private var ruleEntity: RuleEntity? = null
+
+            fun updateRuleEntity(ruleEntity: RuleEntity) {
+                this.ruleEntity = ruleEntity
+            }
+
+            override fun afterTextChanged(s: android.text.Editable?) {
+                ruleEntity?.let { onTextChanged(it, s.toString()) }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        }
     }
 
     private fun writeEmptyStr() {
