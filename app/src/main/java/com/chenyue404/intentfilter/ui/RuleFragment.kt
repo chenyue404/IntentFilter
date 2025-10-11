@@ -217,7 +217,9 @@ class RuleFragment : Fragment() {
                     ruleEntity.fromBlack = isChecked
                 }
                 ibDelete.setOnClickListener {
-                    delete(bindingAdapterPosition)
+                    bindingAdapterPosition.takeIf { it >= 0 }?.let {
+                        delete(it)
+                    }
                 }
             }
         }
