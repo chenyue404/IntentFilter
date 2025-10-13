@@ -153,7 +153,6 @@ class RuleFragment : Fragment() {
                 MyTextWatcher { rule, text -> rule.dataStringKeywords = text }
             val activityTextWatcher = MyTextWatcher { rule, text -> rule.activityKeywords = text }
             val fromTextWatcher = MyTextWatcher { rule, text -> rule.from = text }
-
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder = ViewHolder(
@@ -163,6 +162,12 @@ class RuleFragment : Fragment() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val ruleEntity = _dataList[position]
             with(holder) {
+                etAction.removeTextChangedListener(actionTextWatcher)
+                etType.removeTextChangedListener(typeTextWatcher)
+                etDataString.removeTextChangedListener(dataStringTextWatcher)
+                etActivity.removeTextChangedListener(activityTextWatcher)
+                etFrom.removeTextChangedListener(fromTextWatcher)
+
                 etAction.setText(ruleEntity.actionKeywords)
                 etType.setText(ruleEntity.typeKeywords)
                 etDataString.setText(ruleEntity.dataStringKeywords)
@@ -180,26 +185,15 @@ class RuleFragment : Fragment() {
                 tbFrom.isChecked = ruleEntity.fromBlack
                 tbFrom.visible(ruleEntity.from.isNotEmpty())
 
-                etAction.apply {
-                    removeTextChangedListener(actionTextWatcher)
-                    addTextChangedListener(actionTextWatcher)
-                }
-                etType.apply {
-                    removeTextChangedListener(typeTextWatcher)
-                    addTextChangedListener(typeTextWatcher)
-                }
-                etDataString.apply {
-                    removeTextChangedListener(dataStringTextWatcher)
-                    addTextChangedListener(dataStringTextWatcher)
-                }
-                etActivity.apply {
-                    removeTextChangedListener(activityTextWatcher)
-                    addTextChangedListener(activityTextWatcher)
-                }
-                etFrom.apply {
-                    removeTextChangedListener(fromTextWatcher)
-                    addTextChangedListener(fromTextWatcher)
-                }
+                etAction.addTextChangedListener(actionTextWatcher.updateRuleEntity(ruleEntity))
+                etType.addTextChangedListener(typeTextWatcher.updateRuleEntity(ruleEntity))
+                etDataString.addTextChangedListener(
+                    dataStringTextWatcher.updateRuleEntity(
+                        ruleEntity
+                    )
+                )
+                etActivity.addTextChangedListener(activityTextWatcher.updateRuleEntity(ruleEntity))
+                etFrom.addTextChangedListener(fromTextWatcher.updateRuleEntity(ruleEntity))
 
                 tbAction.setOnCheckedChangeListener { _, isChecked ->
                     ruleEntity.actionBlack = isChecked
@@ -230,8 +224,9 @@ class RuleFragment : Fragment() {
             android.text.TextWatcher {
             private var ruleEntity: RuleEntity? = null
 
-            fun updateRuleEntity(ruleEntity: RuleEntity) {
+            fun updateRuleEntity(ruleEntity: RuleEntity): MyTextWatcher {
                 this.ruleEntity = ruleEntity
+                return this
             }
 
             override fun afterTextChanged(s: android.text.Editable?) {
