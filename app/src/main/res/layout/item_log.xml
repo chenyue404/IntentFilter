@@ -131,6 +131,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textIsSelectable="true"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="@id/tvTitleActivityList"
             app:layout_constraintTop_toBottomOf="@id/tvTitleActivityList"
             tools:text="@tools:sample/full_names" />

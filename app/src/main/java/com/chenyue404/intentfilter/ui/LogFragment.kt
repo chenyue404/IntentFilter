@@ -140,13 +140,13 @@ class LogFragment : Fragment() {
                 setRecycledViewPool(viewPool)
                 layoutManager = NonScrollableLinearLayoutManager(context)
                 adapter = InfoAdapter()
-                (layoutManager as NonScrollableLinearLayoutManager).initialPrefetchItemCount = 10
+//                (layoutManager as NonScrollableLinearLayoutManager).initialPrefetchItemCount = 10
             }
             holder.rvFrom.apply {
                 setRecycledViewPool(viewPool)
                 layoutManager = NonScrollableLinearLayoutManager(context)
                 adapter = InfoAdapter()
-                (layoutManager as NonScrollableLinearLayoutManager).initialPrefetchItemCount = 5
+//                (layoutManager as NonScrollableLinearLayoutManager).initialPrefetchItemCount = 5
             }
             return holder
         }
