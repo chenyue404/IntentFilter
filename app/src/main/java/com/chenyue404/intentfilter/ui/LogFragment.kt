@@ -289,6 +289,8 @@ class LogFragment : Fragment() {
                     if (showAsActivity) split.last()
                     else pkg
                 sp0.isVisible = showAsActivity
+                tvName.setTextIsSelectable(true)
+                tvPkg.setTextIsSelectable(true)
             }
         }
 
