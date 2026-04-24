@@ -147,12 +147,27 @@ class RuleFragment : Fragment() {
             val tbFrom: ToggleButton = itemView.findViewById(R.id.tbFrom)
             val ibDelete: ImageButton = itemView.findViewById(R.id.ibDelete)
 
-            val actionTextWatcher = MyTextWatcher { rule, text -> rule.actionKeywords = text }
-            val typeTextWatcher = MyTextWatcher { rule, text -> rule.typeKeywords = text }
+            val actionTextWatcher = MyTextWatcher { rule, text ->
+                rule.actionKeywords = text
+                tbAction.visible(text.isNotEmpty())
+            }
+            val typeTextWatcher = MyTextWatcher { rule, text ->
+                rule.typeKeywords = text
+                tbType.visible(text.isNotEmpty())
+            }
             val dataStringTextWatcher =
-                MyTextWatcher { rule, text -> rule.dataStringKeywords = text }
-            val activityTextWatcher = MyTextWatcher { rule, text -> rule.activityKeywords = text }
-            val fromTextWatcher = MyTextWatcher { rule, text -> rule.from = text }
+                MyTextWatcher { rule, text ->
+                    rule.dataStringKeywords = text
+                    tbDataString.visible(text.isNotEmpty())
+                }
+            val activityTextWatcher = MyTextWatcher { rule, text ->
+                rule.activityKeywords = text
+                tbActivity.visible(text.isNotEmpty())
+            }
+            val fromTextWatcher = MyTextWatcher { rule, text ->
+                rule.from = text
+                tbFrom.visible(text.isNotEmpty())
+            }
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder = ViewHolder(
