@@ -4,5 +4,5 @@ import android.graphics.drawable.Drawable
 
 data class BasicInfo(
     val label: String,
-    val icon: Drawable,
+    val icon: Drawable?,
 )

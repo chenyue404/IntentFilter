@@ -59,42 +59,50 @@ fun Intent.transToStr(): String {
     return jsonObject.toString()
 }
 
-private val pkgManager by lazy {
-    App.gContext.packageManager
-}
+private val pkgManager
+    get() = App.gContext.packageManager
 
 private val appInfoCache = hashMapOf<String, BasicInfo>()
 fun queryAppInfo(pkg: String): BasicInfo {
-    val info = appInfoCache.get(pkg)
+    val info = appInfoCache[pkg]
     if (info != null) {
         return info
     }
-    val appInfo = pkgManager.getApplicationInfo(pkg, 0)
-    with(
+    val appInfo = runCatching {
+        pkgManager.getApplicationInfo(pkg, 0)
+    }.getOrNull()
+    val basicInfo = appInfo?.let {
         BasicInfo(
             pkgManager.getApplicationLabel(appInfo).toString(),
             pkgManager.getApplicationIcon(appInfo)
         )
+    } ?: BasicInfo(pkg, null)
+    with(
+        basicInfo
     ) {
-        appInfoCache.put(pkg, this)
+        appInfoCache[pkg] = this
         return this
     }
 }
 
 fun queryActivityInfo(activityStr: String): BasicInfo {
-    val info = appInfoCache.get(activityStr)
+    val info = appInfoCache[activityStr]
     if (info != null) {
         return info
     }
-    with(activityStr.split("/").let {
-        pkgManager.getActivityInfo(ComponentName(it[0], it[1]), 0)
-    }.let {
+    val split = activityStr.split("/")
+    val packageName = split.first()
+    val activityName = split.last()
+    val basicInfo = runCatching {
+        pkgManager.getActivityInfo(ComponentName(packageName, activityName), 0)
+    }.getOrNull()?.let {
         BasicInfo(
             it.loadLabel(pkgManager).toString(),
             it.loadIcon(pkgManager)
         )
-    }) {
-        appInfoCache.put(activityStr, this)
+    } ?: BasicInfo(activityName, null)
+    with(basicInfo) {
+        appInfoCache[activityStr] = this
         return this
     }
 }
